@@ -24,7 +24,7 @@ const reviewSchema = new Schema({
     },
     isApproved: {
         type: Boolean,
-        default: true
+        default: false
     }
 }, { timestamps: true })
 reviewSchema.index(

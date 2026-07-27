@@ -21,7 +21,7 @@ import {
     getAllOrders,
     getOrderById,
     updateOrderStatus,
-    deleteOrder,
+    softDeleteOrder,
     addTrackingNumber,
 
     // Review Management
@@ -123,7 +123,7 @@ router.route("/orders")
     .get(getAllOrders);
 
 router.route("/orders/:orderId")
-    .delete(deleteOrder)
+    .delete(softDeleteOrder)
     .get(getOrderById)
 
 router.route("/orders/:orderId/status")

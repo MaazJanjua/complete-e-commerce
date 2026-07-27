@@ -7,16 +7,13 @@ import {
     getUserOrders,
     getOrderById,
     cancelOrder,
-    // getAllOrders,
-    // updateOrderStatus,
     // updatePaymentStatus,
-    // addTrackingNumber
 } from '../controllers/order.controller.js'
 
 import {
     getAllOrders,
     updateOrderStatus,
-    deleteOrder,
+    softDeleteOrder,
     addTrackingNumber,
 } from '../controllers/admin.controller.js'
 

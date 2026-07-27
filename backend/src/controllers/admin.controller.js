@@ -928,43 +928,58 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
 });
 
 //in real ecommerce-stores it is not preferred to delete order instead i did this cancelOrder()
-const cancelOrder = asyncHandler(async (req, res) => {
+const softDeleteOrder = asyncHandler(async (req, res) => {
     // TODO: cancel/remove order
     //get orderId
     const { orderId } = req.params
 
     validateObjectId(orderId, "order Id")
-    //find Order
-    const order = await Order.findOne({
-        _id: orderId
-    })
+    const session = await mongoose.startSession();
 
-    validateResourceExists(order, "Order")
-    //validations
-    if (order.orderStatus === 'delivered') {
-        throw new apiError(400, "Order already delivered")
-    }
-    if (order.orderStatus === 'cancelled') {
-        throw new apiError(400, "Order already cancelled")
-    }
-    order.orderStatus = "cancelled"
-    for (const item of order.items) {
-        await Product.findByIdAndUpdate(
-            item.product,
-            {
-                $inc: {
-                    stock: item.quantity
+    try {
+        session.startTransaction();
+
+        //find Order
+        const order = await Order.findOne({
+            _id: orderId
+        }).session(session)
+
+        validateResourceExists(order, "Order")
+        //validations
+        if (order.orderStatus === 'delivered') {
+            throw new apiError(400, "Order already delivered")
+        }
+        if (order.orderStatus === 'cancelled') {
+            throw new apiError(400, "Order already cancelled")
+        }
+        order.orderStatus = "cancelled"
+        for (const item of order.items) {
+            await Product.findByIdAndUpdate(
+                item.product,
+                {
+                    $inc: {
+                        stock: item.quantity
+                    }
                 }
-            }
-        );
-    }
-    await order.save();
+            ).session(session)
+        }
+        await order.save({ session });
 
-    return res.status(200).json(
-        new apiResponse(
-            200, order, "Order cancelled successfully"
+        await session.commitTransaction();
+
+        return res.status(200).json(
+            new apiResponse(
+                200, order, "Order cancelled successfully"
+            )
         )
-    )
+
+    } catch (error) {
+
+        await session.abortTransaction();
+        throw error;
+    } finally {
+        await session.endSession();
+    }
 });
 
 
@@ -1024,10 +1039,153 @@ const addTrackingNumber = asyncHandler(async (req, res) => {
 //  REVIEW (ADMIN)
 // ------------------------------
 const deleteReview = asyncHandler(async (req, res) => {
+    // Request
 
+    // Get reviewId
+    const { reviewId } = req.params
+
+    // Validate ObjectId
+    validateObjectId(reviewId, "Review Id")
+
+    const session = await mongoose.startSession();
+    try {
+        await session.startTransaction();
+
+
+        // Find Review
+        const review = await Review.findOne({
+            _id: reviewId
+        }).session(session);
+
+        // Review Exists ?
+        validateResourceExists(review, "Review")
+
+        // (Optional) Find Product
+        const product = await Product.findById(review.product);
+
+        validateResourceExists(product, "Product");
+
+
+
+        //delete review and update product averageRating and numReviews
+        await review.deleteOne({ session });
+
+        const stats = await Review.aggregate([
+            {
+                $match: {
+                    product: product._id,
+                    isApproved: true
+
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    averageRating: {
+                        $avg: "$rating"
+                    },
+                    numReviews: {
+                        $sum: 1
+                    }
+                }
+            }
+        ]).session(session);
+
+        product.averageRating = stats[0]?.averageRating || 0;
+
+        product.numReviews = stats[0]?.numReviews || 0;
+
+
+        await product.save({ session });
+
+        await session.commitTransaction();
+
+
+        // Return Success
+        return res.status(200).json(
+            new apiResponse(
+                200, review, "Review deleted successfully"
+            )
+        )
+
+    } catch (error) {
+        await session.abortTransaction();
+        throw error;
+    } finally {
+        await session.endSession();
+    }
 })
-const toggleReviewApproval = asyncHandler(async (req, res) => {
 
+const toggleReviewApproval = asyncHandler(async (req, res) => {
+    // Request
+    // Get reviewId
+
+    const { reviewId } = req.params
+    // Validate ObjectId
+    validateObjectId(reviewId, "Review Id")
+
+    const session = await mongoose.startSession();
+    try {
+
+        await session.startTransaction();
+        // Find Review
+        const review = await Review.findById(reviewId).session(session);
+
+
+        // Exists?
+        validateResourceExists(review, "Review")
+
+        // review.isApproved = !review.isApproved
+        review.isApproved = !review.isApproved
+
+        // Save
+        await review.save({ session });
+
+        const product = await Product.findById(review.product).session(session);
+
+        validateResourceExists(product, "Product");
+        // update product averageRating and numReviews
+
+        const stats = await Review.aggregate([
+            {
+                $match: {
+                    product: product._id,
+                    isApproved: true
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    averageRating: {
+                        $avg: "$rating"
+                    },
+                    numReviews: {
+                        $sum: 1
+                    }
+                }
+            }
+        ]).session(session);
+
+        product.averageRating = stats[0]?.averageRating || 0;
+        product.numReviews = stats[0]?.numReviews || 0;
+
+
+        await product.save({ session });
+        await session.commitTransaction();
+
+
+        // Return Response
+        return res.status(200).json(
+            new apiResponse(
+                200, review, "Review approval status toggled successfully"
+            )
+        )
+    } catch (error) {
+        await session.abortTransaction();
+        throw error;
+    } finally {
+        await session.endSession();
+    }
 })
 
 
@@ -1110,7 +1268,7 @@ export {
     //order Management
     getAllOrders,
     updateOrderStatus,
-    cancelOrder,
+    softDeleteOrder,
     addTrackingNumber,
     getOrderById,
 
