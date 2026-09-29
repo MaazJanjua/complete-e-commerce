@@ -5,7 +5,7 @@ import './index.css'
 import App from './App.jsx'
 import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom'
 
-import PublicRoute from './Components/Auth/PublicRoute.jsx'
+import PublicRoute from './Components/auth/PublicRoute.jsx'
 import ProtectedRoute from './Components/auth/ProtectedRoute.jsx'
 import Profile from './Pages/Profile/Profile.jsx'
 
