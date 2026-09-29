@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { FaSearch, FaShoppingCart, FaUser, FaBars, FaTimes, FaSignOutAlt } from 'react-icons/fa';
 import Logo from '../ui/Logo';
-import { useGetCurrentUserQuery, useLogoutUserMutation } from '../../redux/services/authApi';
+import { useGetCurrentUserQuery, useLogoutUserMutation, authApi } from '../../redux/services/authApi';
+import Button from '../ui/Button';
+import { useDispatch } from 'react-redux';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   // RTK Query hooks for Auth state
   const { data, isLoading } = useGetCurrentUserQuery();
@@ -21,8 +24,12 @@ const Header = () => {
   const handleLogout = async () => {
     try {
       await logoutUser().unwrap();
+      
+      // 1. Clear RTK Query cache so header updates immediately
+      dispatch(authApi.util.resetApiState());
+      
       setIsMenuOpen(false);
-      navigate('/login');
+      navigate('/');
     } catch (err) {
       console.error('Logout failed:', err);
     }
@@ -132,15 +139,16 @@ const Header = () => {
                     <FaUser className="w-4 h-4" />
                   </Link>
 
-                  <button
+                  <Button
+                    type="button"
+                    variant="danger"
+                    isLoading={isLoggingOut}
                     onClick={handleLogout}
-                    disabled={isLoggingOut}
-                    className="flex items-center space-x-1 text-xs text-red-600 bg-red-50 border border-red-200 px-2.5 py-1.5 rounded-md hover:bg-red-600 hover:text-white transition-all font-semibold"
-                    title="Logout"
+                    className="w-auto py-1.5! px-3! text-xs! flex items-center justify-center space-x-1"
                   >
                     <FaSignOutAlt />
-                    <span>{isLoggingOut ? '...' : 'Logout'}</span>
-                  </button>
+                    <span>Logout</span>
+                  </Button>
                 </div>
               )}
             </div>
@@ -210,10 +218,11 @@ const Header = () => {
             {user ? (
               <button
                 onClick={handleLogout}
+                disabled={isLoggingOut}
                 className="flex-1 flex items-center justify-center px-4 py-2 text-red-600 bg-red-50 rounded-lg font-medium"
               >
                 <FaSignOutAlt className="mr-2" />
-                <span>Logout</span>
+                <span>{isLoggingOut ? 'Logging out...' : 'Logout'}</span>
               </button>
             ) : (
               <Link

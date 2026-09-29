@@ -27,7 +27,7 @@ const Button = ({
         <button
             type={type}
             disabled={disabled || isLoading}
-            onClick={onclick}
+            onClick={onClick}
             className={`${baseStyle} ${variants[variant]} ${fullWidth ? 'w-full' : ''} ${className} {...props} `}
         >
             {isLoading ? "Processing..." : children}

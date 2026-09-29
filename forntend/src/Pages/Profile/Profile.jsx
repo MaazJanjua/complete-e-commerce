@@ -1,16 +1,22 @@
 // forntend/src/pages/Profile.jsx
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
-import { FaUser ,FaSignOutAlt} from 'react-icons/fa';
+import { useNavigate, Link } from 'react-router-dom';
+import { FaUser, FaSignOutAlt } from 'react-icons/fa';
+import { useDispatch } from 'react-redux'; // 1. Import useDispatch
 
-import { useGetCurrentUserQuery, useUpdateProfileMutation, useLogoutUserMutation } from '../../redux/services/authApi';
+import { 
+    useGetCurrentUserQuery, 
+    useUpdateProfileMutation, 
+    useLogoutUserMutation,
+    authApi // 2. Import authApi service
+} from '../../redux/services/authApi';
 import Input from '../../Components/ui/Input';
 import Button from '../../Components/ui/Button';
 
 const Profile = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch(); // 3. Initialize dispatch
 
     // RTK Query Hooks
     const { data, isLoading } = useGetCurrentUserQuery();
@@ -53,10 +59,14 @@ const Profile = () => {
         }
     };
 
-    // Logout Handler (100% Fixed)
+    // Logout Handler (Cache Reset Fixed)
     const handleLogout = async () => {
         try {
             await logoutUser().unwrap();
+            
+            // 4. Force Reset RTK Query Cache State for instant UI refresh
+            dispatch(authApi.util.resetApiState());
+            
             navigate('/login');
         } catch (error) {
             console.error('Profile Logout Failed:', error);
@@ -120,40 +130,19 @@ const Profile = () => {
                         </button>
                     </nav>
 
-                    {/* Fixed Logout Button */}
-                    {/* <div className="pt-6 mt-6 border-t border-gray-100">
+                    {/* Redesigned Clean Logout Block */}
+                    <div className="pt-6 mt-6 border-t border-gray-100">
                         <Button
                             type="button"
                             variant="danger"
                             isLoading={isLoggingOut}
                             onClick={handleLogout}
-                            className="w-full py-2! text-xs!"
+                            className="w-full py-2! text-xs! flex items-center justify-center space-x-2"
                         >
-                            Logout
+                            <FaSignOutAlt />
+                            <span>Logout</span>
                         </Button>
-                    </div> */}
-
-                    {user && (
-                        <div className="flex items-center space-x-2 border-l pl-3 ml-1">
-                            <Link
-                                to="/account"
-                                className="p-2 text-[#090909] hover:bg-gray-100 rounded-full transition-all duration-200"
-                                title={`Logged in as ${user.username || user.fullName}`}
-                            >
-                                <FaUser className="w-4 h-4" />
-                            </Link>
-
-                            <button
-                                onClick={handleLogout}
-                                disabled={isLoggingOut}
-                                className="flex items-center space-x-1 text-xs text-red-600 bg-red-50 border border-red-200 px-2.5 py-1.5 rounded-md hover:bg-red-600 hover:text-white transition-all font-semibold"
-                                title="Logout"
-                            >
-                                <FaSignOutAlt />
-                                <span>{isLoggingOut ? '...' : 'Logout'}</span>
-                            </button>
-                        </div>
-                    )}
+                    </div>
 
                 </div>
 
