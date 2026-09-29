@@ -1,6 +1,8 @@
-import { config } from "dotenv";
+// import { config } from "dotenv";
+import { config } from "../config/config.js";
 import mongoose, { Schema } from "mongoose";
 import bcrypt from 'bcrypt'
+import jwt from "jsonwebtoken";
 
 const userSchema = new Schema({
     fullName: {
@@ -63,9 +65,9 @@ const userSchema = new Schema({
 }, { timestamps: true })
 
 userSchema.pre("save", async function () {
-    if (!this.isModefied("password")) return;
+    if (!this.isModified("password")) return;
 
-    this.password = await bcrypt.hast(this.password, 10)
+    this.password = await bcrypt.hash(this.password, 10)
 })
 //costum method
 userSchema.methods.isPasswordCorrect = async function (password) {
@@ -73,7 +75,7 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 }
 
 
-userSchema.methods.generateAccesstoken = function () {
+userSchema.methods.generateAccessToken = function () {
     return jwt.sign({
         _id: this._id,
         email: this.email,

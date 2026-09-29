@@ -1,11 +1,23 @@
 import React from 'react'
 import './index.css'
+import Header from './Components/Header/Header'
+import Footer from './Components/Footer/Footer'
+import { Outlet } from "react-router-dom"
 
 const App = () => {
   return (
-    <div className='bg-red-500'>
-      <h1>react vite app</h1>
-    </div>
+    <>
+      {/* <Header />
+      <Outlet />
+      <Footer /> */}
+      <div className=" flex flex-col">
+        <Header />
+        <main className="flex-1"> 
+          <Outlet />
+        </main>
+        <Footer />
+      </div>
+    </>
   )
 }
 

@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap');
+
+
+
+:root {
+    /* font */
+    --font-primary: 'Lexend', sans-serif;
+
+    /* Brand */
+    --primary: #2563EB;
+    --primary-hover: #1D4ED8;
+
+    /* Navbar
+Footer
+Dark sections
+Secondary buttons
+Product titles
+Icons
+ */
+    /* Secondary */
+    --secondary: #0F172A;
+
+    /* UI */
+    --border: #E5E7EB;
+    --background: #FFFFFF;
+
+    /* Typography */
+    --dark-black: #11161d;
+    --gray: #5c5e5f;
+    --text-white: #ffffff;
+
+    /* Buttons */
+    --button: #73777D;
+
+    /* States */
+    --danger: #FF0008;
+}
+body {
+    font-family: var(--font-primary);
+}

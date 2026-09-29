@@ -5,7 +5,9 @@ class apiError extends Error {
         errors = [],
         stack = ''
     ) {
-        this.statusCode = statusCode,
+        //Must call super before using 'this'
+        super(message),
+            this.statusCode = statusCode,
             this.message = message,
             this.data = null,
             this.errors = errors,
