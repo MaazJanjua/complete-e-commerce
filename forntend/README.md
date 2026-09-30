@@ -1,16 +1,15 @@
-# React + Vite
+Day 1-2: Categories & Products API Integration + Home Page Layout
+<!-- Day 1 Roadmap: Categories & Products API Integration
+Day 1 ka primary goal hai:
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Backend Database mein Products & Categories Schemas aur Controllers ko verify karna.
 
-Currently, two official plugins are available:
+Frontend ke liye productApi.js RTK Query Slice setup karna.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Home Page par Dynamic Category Grid aur Trending Products Grid render karna. -->
 
-## React Compiler
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Day 3: Product Detail Page & Dynamic Filtering
+Day 4: Cart System & Global State Syncing
+Day 5: Checkout & Order Flow
+Day 6-7: Final Polish, Edge Cases & Testing
