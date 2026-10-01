@@ -33,7 +33,7 @@ import wishlist from './routes/wishlist.routes.js'
 //ROUTES SETUP
 app.use("/api/v1/users", userRouter)
 app.use("/api/v1/cart", cartRouter)
-app.use("/api/v1/category", categoryRouter)
+app.use("/api/v1/categories", categoryRouter)
 app.use("/api/v1/order", orderRouter)
 app.use("/api/v1/payment", paymentRouter)
 app.use("/api/v1/product", productRouter)

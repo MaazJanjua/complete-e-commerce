@@ -3,7 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { apiError } from "../utils/apiError.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { validateObjectId, validateResourceExists } from "../utils/validators/galobalValidator.js";
-
+import { Category } from "../models/category.model.js";
 
 // const createCategory = (asyncHandler(async (req, res) => { }))
 

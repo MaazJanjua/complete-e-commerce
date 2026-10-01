@@ -4,7 +4,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const productApi = createApi({
     reducerPath: "productApi",
     baseQuery: fetchBaseQuery({
-        baseUrl: 'https://localhost:5000/api/vi',// Verify Express Server Port
+        baseUrl: 'http://localhost:5000/api/v1',// Verify Express Server Port
         credentials: "include"
     }),
 
@@ -16,19 +16,19 @@ export const productApi = createApi({
         //Fetch all products with original filters
         getProducts: builder.query({
             query: (params) => ({
-                url: "/products",
+                url: "/product",
                 params
             })
         }),
         //Fetch a single product detail by ID
         getProductById: builder.query({
-            query: (id) => '/product/${id}',
+            query: (id) => `/product/${id}`,
         }),
     }),
 });
 
 export const {
     useGetCategoriesQuery,
-    useGetProductQuery,
+    useGetProductsQuery,
     useGetProductByIdQuery
 } = productApi
