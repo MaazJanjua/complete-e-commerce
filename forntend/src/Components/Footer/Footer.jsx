@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaFacebook, FaTwitter, FaInstagram, FaYoutube, FaMapMarkerAlt, FaPhone, FaEnvelope, FaCcVisa, FaCcMastercard, FaCcPaypal, FaCcAmex } from 'react-icons/fa';
-
+import Logo from '../ui/Logo';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -14,9 +14,20 @@ const Footer = () => {
 
           {/* Company Info */}
           <div className="space-y-4 font-(--font-primary)">
-            <h2 className="text-4xl font-bold tracking-tight ">
+            {/* <h2 className="text-4xl font-bold tracking-tight ">
               HM<span className="">Store</span>
+            </h2> */}
+            <h2>
+              {/* Logo */}
+              <Link
+                to="/"
+                className="shrink-0 flex items-center space-x-2"
+                aria-label="Homepage"
+              >
+                <Logo />
+              </Link>
             </h2>
+
             <p className="text-(--gray) capitalize lg:text-[.85vw] text-[3.2vw] md:text-[2.2vw]   break-all lg:w-[15vw] w-[79vw] md:w-[36vw] leading-relaxed font-semibold">
               Your trusted destination for quality products. We bring you the best
               deals and premium shopping experience right at your fingertips.

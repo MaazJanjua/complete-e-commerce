@@ -37,4 +37,5 @@ Icons
 }
 body {
     font-family: var(--font-primary);
+    background-color: var(--background);
 }

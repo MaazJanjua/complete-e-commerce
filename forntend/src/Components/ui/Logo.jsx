@@ -9,8 +9,8 @@ const Logo = ({ className = '', size = 'md' }) => {
     };
 
     return (
-        <span className={` tracking-tight uppercase  font-extrabold ${sizes[size]} ${className}`}>
-            <span className='text-blue-600'>HM</span>  SHOP
+        <span className={` tracking-tight uppercase  font-extrabold text-black ${sizes[size]} ${className} `}>
+            <span >HM</span>  SHOP
         </span>
     );
 };
