@@ -4,18 +4,24 @@ import { FaSearch, FaShoppingCart, FaUser, FaBars, FaTimes, FaSignOutAlt } from 
 import Logo from '../ui/Logo';
 import { useGetCurrentUserQuery, useLogoutUserMutation, authApi } from '../../redux/services/authApi';
 import Button from '../ui/Button';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const Header = () => {
+  // 1. Redux Auth State
+  const authState = useSelector((state) => state.auth);
+  const reduxUser = authState?.user;
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // RTK Query hooks for Auth state
+  // 2. RTK Query hooks for Auth state
   const { data, isLoading } = useGetCurrentUserQuery();
   const [logoutUser, { isLoading: isLoggingOut }] = useLogoutUserMutation();
 
-  const user = data?.data; // Express Api response structure
+  // Single Source of Truth for User & Derived Authentication Status
+  const currentUser = data?.data || reduxUser;
+  const isAuthenticated = Boolean(currentUser);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -24,10 +30,10 @@ const Header = () => {
   const handleLogout = async () => {
     try {
       await logoutUser().unwrap();
-      
-      // 1. Clear RTK Query cache so header updates immediately
+
+      // Clear RTK Query cache so header updates immediately
       dispatch(authApi.util.resetApiState());
-      
+
       setIsMenuOpen(false);
       navigate('/');
     } catch (err) {
@@ -35,7 +41,7 @@ const Header = () => {
     }
   };
 
-  // Base navigation links (Common for everyone)
+  // Base navigation links
   const baseNavLinks = [
     { name: 'Home', path: '/' },
     { name: 'T-Shirt', path: '/Shirts' },
@@ -67,10 +73,10 @@ const Header = () => {
                   key={link.name}
                   to={link.path}
                   className={({ isActive }) =>
-                    `px-3 py-2 text-base font-bold rounded-lg transition-all duration-200 
-                    ${isActive
-                      ? 'text-black bg-blue-50'
-                      : 'text-[#090909] hover:text-blue-600 hover:bg-gray-50'
+                    `px-3 py-2 text-base font-bold rounded-lg transition-all duration-200 ${
+                      isActive
+                        ? 'text-black bg-blue-50'
+                        : 'text-[#090909] hover:text-blue-600 hover:bg-gray-50'
                     }`
                   }
                 >
@@ -81,14 +87,15 @@ const Header = () => {
               {/* DYNAMIC AUTH LINKS FOR DESKTOP */}
               {isLoading ? (
                 <span className="text-xs text-gray-400 px-2">Loading...</span>
-              ) : !user ? (
+              ) : !isAuthenticated ? (
                 /* Not Logged In -> Show Login & Signup */
                 <>
                   <NavLink
                     to="/login"
                     className={({ isActive }) =>
-                      `px-3 py-2 text-base font-bold rounded-lg transition-all duration-200 
-                      ${isActive ? 'text-black bg-blue-50' : 'text-[#090909] hover:text-blue-600 hover:bg-gray-50'}`
+                      `px-3 py-2 text-base font-bold rounded-lg transition-all duration-200 ${
+                        isActive ? 'text-black bg-blue-50' : 'text-[#090909] hover:text-blue-600 hover:bg-gray-50'
+                      }`
                     }
                   >
                     Login
@@ -96,8 +103,9 @@ const Header = () => {
                   <NavLink
                     to="/register"
                     className={({ isActive }) =>
-                      `px-3 py-2 text-base font-bold rounded-lg transition-all duration-200 
-                      ${isActive ? 'text-black bg-blue-50' : 'text-[#090909] hover:text-blue-600 hover:bg-gray-50'}`
+                      `px-3 py-2 text-base font-bold rounded-lg transition-all duration-200 ${
+                        isActive ? 'text-black bg-blue-50' : 'text-[#090909] hover:text-blue-600 hover:bg-gray-50'
+                      }`
                     }
                   >
                     Signup
@@ -105,6 +113,18 @@ const Header = () => {
                 </>
               ) : null}
             </nav>
+
+            {/* Admin Quick Action Button (Desktop) */}
+            {currentUser?.role === 'admin' && (
+              <div className="hidden md:flex items-center">
+                <Link
+                  to="/admin/dashboard"
+                  className="bg-black text-white text-xs font-bold px-3 py-1.5 rounded uppercase tracking-wider hover:bg-gray-800 transition-all"
+                >
+                  Admin Dashboard
+                </Link>
+              </div>
+            )}
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center space-x-3">
@@ -129,12 +149,12 @@ const Header = () => {
               </Link>
 
               {/* Profile / Logout Actions */}
-              {user && (
+              {isAuthenticated && (
                 <div className="flex items-center space-x-2 border-l pl-3 ml-1">
                   <Link
                     to="/account"
                     className="p-2 text-[#090909] hover:bg-gray-100 rounded-full transition-all duration-200"
-                    title={`Logged in as ${user.username || user.fullName}`}
+                    title={`Logged in as ${currentUser.username || currentUser.fullName || 'User'}`}
                   >
                     <FaUser className="w-4 h-4" />
                   </Link>
@@ -167,8 +187,9 @@ const Header = () => {
 
       {/* Mobile Drawer Navigation */}
       <div
-        className={`md:hidden bg-white border-t border-gray-100 transition-all duration-300 ease-in-out overflow-hidden
-          ${isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
+        className={`md:hidden bg-white border-t border-gray-100 transition-all duration-300 ease-in-out overflow-hidden ${
+          isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+        }`}
       >
         <div className="px-4 py-3 space-y-1">
           {baseNavLinks.map((link) => (
@@ -177,15 +198,27 @@ const Header = () => {
               to={link.path}
               onClick={() => setIsMenuOpen(false)}
               className={({ isActive }) =>
-                `block px-4 py-2.5 text-base font-medium rounded-lg transition-all duration-200
-                ${isActive ? 'text-black bg-blue-50 font-bold' : 'text-[#090909] hover:bg-gray-50'}`
+                `block px-4 py-2.5 text-base font-medium rounded-lg transition-all duration-200 ${
+                  isActive ? 'text-black bg-blue-50 font-bold' : 'text-[#090909] hover:bg-gray-50'
+                }`
               }
             >
               {link.name}
             </NavLink>
           ))}
 
-          {!user && (
+          {/* Admin Dashboard Link for Mobile Drawer */}
+          {currentUser?.role === 'admin' && (
+            <Link
+              to="/admin/dashboard"
+              onClick={() => setIsMenuOpen(false)}
+              className="block px-4 py-2.5 text-base font-bold text-white bg-black rounded-lg text-center my-1"
+            >
+              Admin Dashboard
+            </Link>
+          )}
+
+          {!isAuthenticated && (
             <>
               <NavLink
                 to="/login"
@@ -215,7 +248,7 @@ const Header = () => {
               <span>Cart (3)</span>
             </Link>
 
-            {user ? (
+            {isAuthenticated ? (
               <button
                 onClick={handleLogout}
                 disabled={isLoggingOut}

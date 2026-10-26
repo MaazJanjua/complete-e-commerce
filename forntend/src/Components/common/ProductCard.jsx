@@ -37,19 +37,19 @@ const ProductCard = ({ product }) => {
             </div>
 
             {/* PRODUCT DETAILs */}
-            <div className='p-4 flex flex-col grow justify-between text-left'>
+            <div className='p-2 flex flex-col grow justify-between text-left'>
                 <div>
-                    <span className='text-[10px] uppercase font-bold text-gray-400 tracking-wider'>
+                    <span className='md:text-[10px] text-[8px] uppercase font-bold text-gray-400 tracking-wider'>
                         {product?.category?.name || "Clothing"}
                     </span>
                 </div>
-                <h3 className='text-sm font-bold text-gray-900 uppercase tracking-tight truncate mt-1'>{product?.name || 'Untitled Product'}
+                <h3 className='md:text-[10px] text-[9px] font-bold text-gray-900 uppercase tracking-tight truncate mt-1'>{product?.name || 'Untitled Product'}
 
                 </h3>
 
             </div>
 
-            <div className='flex flex-col items-center'>
+            <div className='flex md:flex-row sm:flex-col items-center md:px-4 gap-2 md:text-[10px] text-[9px]  p-2  '>
                 <span>
                     PKR - <span className='text-blue-700'>  {product?.price ? product.price.toLocaleString() : '0'} </span>
                 </span>
@@ -58,7 +58,7 @@ const ProductCard = ({ product }) => {
                     type="button"
                     onClick={handleAddToCart}
                     variant="Outline"
-                    className="w-auto! py-1! px-3! text-xs border rounded my-2 border-black! hover:bg-black! hover:text-white!"
+                    className="w-auto! py-1! px-3! text-xs border rounded my-2 border-black! hover:bg-black! hover:text-white! md:text-[10px] text-[8px]"
                 >
                     Add To Cart
                 </Button>
