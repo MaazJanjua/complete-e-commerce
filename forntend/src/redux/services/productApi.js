@@ -108,9 +108,9 @@ export const productApi = createApi({
             providesTags: (result) =>
                 result?.data?.products
                     ? [
-                          ...result.data.products.map(({ _id }) => ({ type: "Product", id: _id })),
-                          { type: "Product", id: "LIST" },
-                      ]
+                        ...result.data.products.map(({ _id }) => ({ type: "Product", id: _id })),
+                        { type: "Product", id: "LIST" },
+                    ]
                     : [{ type: "Product", id: "LIST" }],
         }),
 
@@ -129,6 +129,42 @@ export const productApi = createApi({
             }),
             invalidatesTags: [{ type: 'Product', id: 'LIST' }],
         }),
+
+        deleteProduct: builder.mutation({
+            query: (productId) => ({
+                url: `/product/${productId}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: [{ type: "Product", id: "LIST" }]
+        }),
+
+        // Add inside endpoints object of productApi.js
+        updateProduct: builder.mutation({
+            query: ({ productId, updatedData }) => ({
+                url: `/product/${productId}`,
+                method: "PATCH",
+                body: updatedData,
+            }),
+            invalidatesTags: [{ type: 'Product', id: 'LIST' }],
+        }),
+
+        // Add inside endpoints object of productApi.js
+        createCategory: builder.mutation({
+            query: (categoryData) => ({
+                url: "/categories",
+                method: "POST",
+                body: categoryData,
+            }),
+            invalidatesTags: ['Category'],
+        }),
+
+        deleteCategory: builder.mutation({
+            query: (categoryId) => ({
+                url: `/categories/${categoryId}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ['Category'],
+        }),
     }),
 });
 
@@ -137,4 +173,8 @@ export const {
     useGetProductsQuery,
     useGetProductByIdQuery,
     useCreateProductMutation,
+    useDeleteProductMutation,
+    useUpdateProductMutation,
+    useCreateCategoryMutation,
+    useDeleteCategoryMutation
 } = productApi;

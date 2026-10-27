@@ -195,6 +195,8 @@ import AdminRoute from './Components/auth/AdminRoute.jsx';
 // Admin Panel Layout & Pages (REAL IMPORTS)
 import AdminLayout from './Pages/Admin/AdminLayout.jsx';
 import CreateProduct from './Pages/Admin/CreateProducts.jsx'; // <-- Real Styled Form Import
+import ManageProducts from './Pages/Admin/ManageProduct.jsx';
+import Categories from './Pages/Admin/Categories.jsx';
 
 // Temporary Placeholder for Admin Dashboard until Dashboard page is built
 const AdminDashboard = () => (
@@ -227,7 +229,9 @@ const router = createBrowserRouter(
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="products" element={<ManageProducts />} />
           <Route path="products/create" element={<CreateProduct />} />
+          <Route path='categories' element={<Categories />} />
         </Route>
       </Route>
     </>
