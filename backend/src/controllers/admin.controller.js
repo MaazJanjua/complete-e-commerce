@@ -7,6 +7,8 @@ import { User } from "../models/user.model.js";
 import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.js";
 import { Product } from "../models/product.model.js";
 import { Order } from "../models/order.model.js";
+import { Category } from '../models/category.model.js'
+import slugify from 'slugify';
 
 // ------------------------------
 //  USER MANAGEMENT (ADMIN)
@@ -419,15 +421,23 @@ const createProduct = asyncHandler(async (req, res) => {
     //category exist
     const categoryExists = await Category.exists({ _id: category });
 
-    validateResourceExists(existingCategory, "Category");
+    validateResourceExists(categoryExists, "Category");
 
 
 
-    const productLocalPaths = req.files?.productImages?.map(file => file.path) || [];
+    // const productLocalPaths = req.files?.productImages?.map(file => file.path) || [];
+
+    // upload.array() fills req.files as a direct array of file objects
+    const files = Array.isArray(req.files) ? req.files : [];
+    const productLocalPaths = files.map((file) => file.path);
 
     if (productLocalPaths.length === 0) {
-        throw new apiError(400, 'product Image is required')
+        throw new apiError(400, 'product Image is required');
     }
+
+    // if (productLocalPaths.length === 0) {
+    //     throw new apiError(400, 'product Image is required')
+    // }
 
     if (productLocalPaths.length > 5) {
         throw new apiError(

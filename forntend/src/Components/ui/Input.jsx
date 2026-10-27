@@ -16,7 +16,7 @@ const Input = forwardRef(
         return (
             <div className={`w-full ${containerClassName}`}>
                 {label && (
-                    <label className="block text-xs font-semibold uppercase tracking-wider mb-1 text-gray-800">
+                    <label className="block text-xs font-semibold uppercase tracking-wider  mb-1 text-gray-950">
                         {label}
                     </label>
                 )}
@@ -25,8 +25,8 @@ const Input = forwardRef(
                     ref={ref}
                     className={`w-full border px-3 py-2 text-sm focus:outline-none transition-colors ${error
                             ? 'border-red-500 focus:border-red-600'
-                            : 'border-gray-300 focus:border-black'
-                        } ${props.disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : ''} ${className}`}
+                            : 'border-gray-300 focus:border-black text-gray-950'
+                        } ${props.disabled ? 'bg-gray-100 cursor-not-allowed text-gray-950 ' : ''} ${className}`}
                     {...props}
                 />
                 {error && <p className="text-red-500 text-xs mt-1">{error}</p>}

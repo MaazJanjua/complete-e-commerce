@@ -65,7 +65,7 @@ const Login = ({ switchToRegister }) => {
         <div className="max-w-md mx-auto my-10 p-6 bg-white border border-gray-200 shadow-sm text-center">
             <Logo size="lg" className="mb-4 inline-block" />
             <h2 className='text-lg font-bold mb-6 uppercase tracking-wider text-gray-700'>
-                Sign In to Your Account
+                Login to Your Account
             </h2>
 
             {apiError && <div className='mb-4 text-sm text-red-600'>{apiError}</div>}
