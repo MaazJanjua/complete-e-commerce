@@ -138,7 +138,6 @@ export const productApi = createApi({
             invalidatesTags: [{ type: "Product", id: "LIST" }]
         }),
 
-        // Add inside endpoints object of productApi.js
         updateProduct: builder.mutation({
             query: ({ productId, updatedData }) => ({
                 url: `/product/${productId}`,
@@ -148,7 +147,6 @@ export const productApi = createApi({
             invalidatesTags: [{ type: 'Product', id: 'LIST' }],
         }),
 
-        // Add inside endpoints object of productApi.js
         createCategory: builder.mutation({
             query: (categoryData) => ({
                 url: "/categories",
@@ -165,6 +163,12 @@ export const productApi = createApi({
             }),
             invalidatesTags: ['Category'],
         }),
+
+
+        getAdminStats: builder.query({
+            query: () => '/admin/stats',
+            providesTags: ['Product', 'Category'],
+        }),
     }),
 });
 
@@ -176,5 +180,6 @@ export const {
     useDeleteProductMutation,
     useUpdateProductMutation,
     useCreateCategoryMutation,
-    useDeleteCategoryMutation
+    useDeleteCategoryMutation,
+    useGetAdminStatsQuery
 } = productApi;

@@ -90,7 +90,7 @@ const Login = ({ switchToRegister }) => {
                     error={errors.password?.message}
                 />
                 <Button type="submit" isLoading={isLoading} >
-                    Sign In
+                    Login In
                 </Button>
 
             </form>

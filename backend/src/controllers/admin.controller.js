@@ -1202,18 +1202,187 @@ const toggleReviewApproval = asyncHandler(async (req, res) => {
 // ------------------------------
 //  category (ADMIN)
 // ------------------------------
-const createCategory = (asyncHandler(async (req, res) => {
+// ------------------------------
+//  CATEGORY MANAGEMENT (ADMIN)
+// ------------------------------
 
-}))
-const updateCategory = (asyncHandler(async (req, res) => {
+/**
+ * @desc    Create a new product category
+ * @route   POST /api/v1/admin/categories
+ * @access  Private/Admin
+ */
+const createCategory = asyncHandler(async (req, res) => {
+    // 1. Get name & optional description from request body
+    const { name, description } = req.body;
 
-}))
-const deleteCategory = (asyncHandler(async (req, res) => {
+    // 2. Validate input fields
+    if (!name?.trim()) {
+        throw new apiError(400, "Category name is required");
+    }
 
-}))
-const toggleCategoryStatus = (asyncHandler(async (req, res) => {
+    const cleanName = name.trim();
 
-}))
+    // 3. Generate unique URL-friendly slug
+    const slug = slugify(cleanName, {
+        lower: true,
+        strict: true // Remove special characters
+    });
+
+    // 4. Check for existing category with same name/slug
+    const existingCategory = await Category.findOne({
+        $or: [{ name: cleanName }, { slug }]
+    });
+
+    if (existingCategory) {
+        throw new apiError(409, "Category with this name already exists");
+    }
+
+    // 5. Create Category in Database
+    const category = await Category.create({
+        name: cleanName,
+        slug,
+        description: description?.trim() || "",
+        isActive: true // Active by default
+    });
+
+    // 6. Return Created Category Response
+    return res.status(201).json(
+        new apiResponse(
+            201,
+            category,
+            "Category created successfully"
+        )
+    );
+});
+
+/**
+ * @desc    Update category name, description, or details
+ * @route   PATCH /api/v1/admin/categories/:categoryId
+ * @access  Private/Admin
+ */
+const updateCategory = asyncHandler(async (req, res) => {
+    // 1. Get categoryId from params
+    const { categoryId } = req.params;
+
+    // 2. Validate MongoDB ObjectId format
+    validateObjectId(categoryId, "Category ID");
+
+    // 3. Get update fields from body
+    const { name, description } = req.body;
+
+    if (!name?.trim() && description === undefined) {
+        throw new apiError(400, "At least one field (name or description) is required to update");
+    }
+
+    // 4. Find Category
+    const category = await Category.findById(categoryId);
+    validateResourceExists(category, "Category");
+
+    // 5. Check duplicate name if name is being updated
+    if (name?.trim()) {
+        const cleanName = name.trim();
+        const newSlug = slugify(cleanName, { lower: true, strict: true });
+
+        const duplicateCategory = await Category.findOne({
+            _id: { $ne: categoryId }, // Exclude current category
+            $or: [{ name: cleanName }, { slug: newSlug }]
+        });
+
+        if (duplicateCategory) {
+            throw new apiError(409, "Another category with this name already exists");
+        }
+
+        category.name = cleanName;
+        category.slug = newSlug;
+    }
+
+    if (description !== undefined) {
+        category.description = description.trim();
+    }
+
+    // 6. Save Updated Category
+    await category.save();
+
+    return res.status(200).json(
+        new apiResponse(
+            200,
+            category,
+            "Category updated successfully"
+        )
+    );
+});
+
+/**
+ * @desc    Delete category and handle associated product references
+ * @route   DELETE /api/v1/admin/categories/:categoryId
+ * @access  Private/Admin
+ */
+const deleteCategory = asyncHandler(async (req, res) => {
+    // 1. Get categoryId from params
+    const { categoryId } = req.params;
+
+    // 2. Validate ObjectId
+    validateObjectId(categoryId, "Category ID");
+
+    // 3. Find Category
+    const category = await Category.findById(categoryId);
+    validateResourceExists(category, "Category");
+
+    // 4. Prevent deleting category if products are still assigned to it
+    const associatedProductsCount = await Product.countDocuments({
+        category: categoryId,
+        isDeleted: false
+    });
+
+    if (associatedProductsCount > 0) {
+        throw new apiError(
+            400,
+            `Cannot delete category. It is assigned to ${associatedProductsCount} active product(s). Please reassign or delete those products first.`
+        );
+    }
+
+    // 5. Delete Category from Database
+    await category.deleteOne();
+
+    return res.status(200).json(
+        new apiResponse(
+            200,
+            { categoryId },
+            "Category deleted successfully"
+        )
+    );
+});
+
+/**
+ * @desc    Toggle category visibility/active status (Active <-> Inactive)
+ * @route   PATCH /api/v1/admin/categories/:categoryId/status
+ * @access  Private/Admin
+ */
+const toggleCategoryStatus = asyncHandler(async (req, res) => {
+    // 1. Get categoryId from params
+    const { categoryId } = req.params;
+
+    // 2. Validate ObjectId
+    validateObjectId(categoryId, "Category ID");
+
+    // 3. Find Category
+    const category = await Category.findById(categoryId);
+    validateResourceExists(category, "Category");
+
+    // 4. Toggle Status boolean
+    category.isActive = !category.isActive;
+
+    // 5. Save Category
+    await category.save();
+
+    return res.status(200).json(
+        new apiResponse(
+            200,
+            category,
+            `Category status updated to ${category.isActive ? 'Active' : 'Inactive'}`
+        )
+    );
+});
 
 
 // ------------------------------
@@ -1248,14 +1417,96 @@ const refundPayment = (asyncHandler(async (req, res) => {
 //   "lowStockProducts": 8,
 //   "recentOrders": [...]
 // }
+// const getAdminStats = asyncHandler(async (req, res) => {
+//     // dashboard data
+//     // TODO:
+//     // total users
+//     // total orders
+//     // total revenue
+//     // total products
+// });
+// ------------------------------
+//  DASHBOARD STATS (ADMIN)
+// ------------------------------
+/**
+ * @desc    Get aggregated dashboard analytics and stats
+ * @route   GET /api/v1/admin/stats
+ * @access  Private/Admin
+ */
 const getAdminStats = asyncHandler(async (req, res) => {
-    // dashboard data
-    // TODO:
-    // total users
-    // total orders
-    // total revenue
-    // total products
+    // 1. Parallel DB Queries using Promise.all for Maximum Efficiency
+    const [
+        totalUsers,
+        totalProducts,
+        totalCategories,
+        totalOrders,
+        lowStockProducts,
+        revenueData,
+        pendingOrdersCount,
+        recentOrders
+    ] = await Promise.all([
+        // Total Active Registered Users (excluding deleted)
+        User.countDocuments({ isDeleted: false }),
+
+        // Total Active Products
+        Product.countDocuments({ isDeleted: false }),
+
+        // <-- Total Categories Count
+        Category.countDocuments(),
+        // Total Store Orders
+        Order.countDocuments(),
+
+        // Low Stock Products Warning (Stock <= 5)
+        Product.countDocuments({ stock: { $lte: 5 }, isDeleted: false }),
+
+        // Total Lifetime Revenue Aggregation (Paid / Delivered Orders)
+        Order.aggregate([
+            {
+                $match: {
+                    paymentStatus: "paid"
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalRevenue: { $sum: "$totalAmount" }
+                }
+            }
+        ]),
+
+        // Pending Orders Count
+        Order.countDocuments({ orderStatus: "pending" }),
+
+        // Recent 5 Orders for Dashboard Quick Feed
+        Order.find()
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .populate("user", "fullName email")
+            .select("_id totalAmount orderStatus paymentStatus createdAt user")
+    ]);
+
+    // Extract revenue total cleanly
+    const totalRevenue = revenueData[0]?.totalRevenue || 0;
+
+    // 2. Return Consolidated Stats Payload
+    return res.status(200).json(
+        new apiResponse(
+            200,
+            {
+                totalUsers,
+                totalProducts,
+                totalCategories,
+                totalOrders,
+                totalRevenue,
+                pendingOrdersCount,
+                lowStockProducts,
+                recentOrders
+            },
+            "Admin stats fetched successfully"
+        )
+    );
 });
+
 
 
 export {

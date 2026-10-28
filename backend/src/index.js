@@ -13,7 +13,7 @@ const startServer = async () => {
         })
         console.log("Server is ready 🚀");
     } catch (error) {
-        console.log("startup error", error);
+        console.log("startup error", error); 
         process.exit(1)
 
     }

@@ -10,7 +10,7 @@ import {
 } from "../utils/validators/galobalValidator.js";
 import { Order } from "../models/order.model.js";
 import { Payment } from "../models/payment.model.js";
-
+ 
 
 // ===============================
 // Helper Functions
@@ -26,7 +26,6 @@ const markPaymentFailed = async (payment, order, session) => {
     // await session.commitTransaction()
 
 }
-
 
 const createPayment = asyncHandler(async (req, res) => {
 
@@ -481,10 +480,6 @@ const getPaymentByOrderId = (asyncHandler(async (req, res) => {
         )
     )
 }))
-
-
-
-
 
 
 export {
