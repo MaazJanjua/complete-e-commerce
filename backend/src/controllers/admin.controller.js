@@ -1433,51 +1433,153 @@ const refundPayment = (asyncHandler(async (req, res) => {
  * @route   GET /api/v1/admin/stats
  * @access  Private/Admin
  */
+// const getAdminStats = asyncHandler(async (req, res) => {
+//     // 1. Parallel DB Queries using Promise.all for Maximum Efficiency
+//     const [
+//         totalUsers,
+//         adminUsers,
+//         normalUsers,
+//         totalProducts,
+//         totalCategories,
+//         totalOrders,
+//         // lowStockProducts,
+//         lowStockItems,
+//         revenueData,
+//         pendingOrdersCount,
+//         recentOrders
+//     ] = await Promise.all([
+//         // Total Active Registered Users (excluding deleted)
+//         User.countDocuments({ isDeleted: false }),
+
+//         // Admin Role Users Count
+//         User.countDocuments({ role: "admin", isDeleted: { $ne: true } }),
+
+//         // Normal/Customer Role Users Count
+//         User.countDocuments({ role: "user", isDeleted: { $ne: true } }),
+
+//         // Total Active Products (handles missing isDeleted field & checks isActive)
+//         Product.countDocuments({
+//             isDeleted: { $ne: true },
+//             isActive: { $ne: false }
+//         }),
+
+//         // <-- Total Categories Count
+//         Category.countDocuments(),
+//         // Total Store Orders
+//         Order.countDocuments(),
+
+//         // Low Stock Products Warning (Stock <= 5)
+//         Product.countDocuments({
+//             stock: { $lte: 5 },
+//             isDeleted: { $ne: true }
+//         }).select("_id title stock price productImages category")
+//             .populate("category", "name")
+//             .sort({ stock: 1 }),
+
+//         // Total Lifetime Revenue Aggregation (Paid / Delivered Orders)
+//         Order.aggregate([
+//             {
+//                 $match: {
+//                     paymentStatus: "paid"
+//                 }
+//             },
+//             {
+//                 $group: {
+//                     _id: null,
+//                     totalRevenue: { $sum: "$totalAmount" }
+//                 }
+//             }
+//         ]),
+
+//         // Pending Orders Count
+//         Order.countDocuments({ orderStatus: "pending" }),
+
+//         // Recent 5 Orders for Dashboard Quick Feed
+//         Order.find()
+//             .sort({ createdAt: -1 })
+//             .limit(5)
+//             .populate("user", "fullName email")
+//             .select("_id totalAmount orderStatus paymentStatus createdAt user")
+//     ]);
+
+//     // Extract revenue total cleanly
+//     const totalRevenue = revenueData[0]?.totalRevenue || 0;
+
+//     // 2. Return Consolidated Stats Payload
+//     return res.status(200).json(
+//         new apiResponse(
+//             200,
+//             {
+//                 totalUsers,
+//                 adminUsers,
+//                 normalUsers,
+//                 totalProducts,
+//                 totalCategories,
+//                 totalOrders,
+//                 totalRevenue,
+//                 pendingOrdersCount,
+//                 lowStockProducts: lowStockItems.length,
+//                 lowStockItems,
+//                 recentOrders
+//             },
+//             "Admin stats fetched successfully"
+//         )
+//     );
+// });
+
 const getAdminStats = asyncHandler(async (req, res) => {
-    // 1. Parallel DB Queries using Promise.all for Maximum Efficiency
     const [
         totalUsers,
+        adminUsers,
+        normalUsers,
         totalProducts,
         totalCategories,
         totalOrders,
-        lowStockProducts,
+        lowStockItems,
         revenueData,
         pendingOrdersCount,
         recentOrders
     ] = await Promise.all([
-        // Total Active Registered Users (excluding deleted)
-        User.countDocuments({ isDeleted: false }),
+        // 1. Total Active Registered Users
+        User.countDocuments({ isDeleted: { $ne: true } }),
 
-        // Total Active Products
-        Product.countDocuments({ isDeleted: false }),
+        // 2. Admin Role Users Count
+        User.countDocuments({ role: "admin", isDeleted: { $ne: true } }),
 
-        // <-- Total Categories Count
+        // 3. Normal/Customer Role Users Count
+        User.countDocuments({ role: "user", isDeleted: { $ne: true } }),
+
+        // 4. Total Active Products
+        Product.countDocuments({
+            isDeleted: { $ne: true },
+            isActive: { $ne: false }
+        }),
+
+        // 5. Total Categories Count
         Category.countDocuments(),
-        // Total Store Orders
+
+        // 6. Total Store Orders
         Order.countDocuments(),
 
-        // Low Stock Products Warning (Stock <= 5)
-        Product.countDocuments({ stock: { $lte: 5 }, isDeleted: false }),
+        // 7. Fetch Actual Low Stock Products Array (Product.find use karein, countDocuments nahi)
+        Product.find({
+            stock: { $lte: 5 },
+            isDeleted: { $ne: true }
+        })
+            .select("_id title stock price productImages category")
+            .populate("category", "name")
+            .sort({ stock: 1 }),
 
-        // Total Lifetime Revenue Aggregation (Paid / Delivered Orders)
+        // 8. Total Lifetime Revenue
         Order.aggregate([
-            {
-                $match: {
-                    paymentStatus: "paid"
-                }
-            },
-            {
-                $group: {
-                    _id: null,
-                    totalRevenue: { $sum: "$totalAmount" }
-                }
-            }
+            { $match: { paymentStatus: "paid" } },
+            { $group: { _id: null, totalRevenue: { $sum: "$totalAmount" } } }
         ]),
 
-        // Pending Orders Count
+        // 9. Pending Orders Count
         Order.countDocuments({ orderStatus: "pending" }),
 
-        // Recent 5 Orders for Dashboard Quick Feed
+        // 10. Recent 5 Orders
         Order.find()
             .sort({ createdAt: -1 })
             .limit(5)
@@ -1485,28 +1587,28 @@ const getAdminStats = asyncHandler(async (req, res) => {
             .select("_id totalAmount orderStatus paymentStatus createdAt user")
     ]);
 
-    // Extract revenue total cleanly
     const totalRevenue = revenueData[0]?.totalRevenue || 0;
 
-    // 2. Return Consolidated Stats Payload
     return res.status(200).json(
         new apiResponse(
             200,
             {
                 totalUsers,
+                adminUsers,
+                normalUsers,
                 totalProducts,
                 totalCategories,
                 totalOrders,
                 totalRevenue,
                 pendingOrdersCount,
-                lowStockProducts,
+                lowStockProducts: lowStockItems.length,
+                lowStockItems, // <-- YEH ARRAY RETURN KARNA ZAROORI HAI
                 recentOrders
             },
             "Admin stats fetched successfully"
         )
     );
 });
-
 
 
 export {

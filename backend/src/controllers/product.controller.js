@@ -231,6 +231,7 @@ const getAllProducts1 = (asyncHandler(async (req, res) => {
                 averageRating: 1,
                 numReviews: 1,
                 thumbnail: 1,
+                productImages: 1,
                 createdAt: 1,
 
                 category: {

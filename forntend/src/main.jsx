@@ -98,6 +98,7 @@ import CreateProduct from './Pages/Admin/CreateProducts.jsx';
 import ManageProducts from './Pages/Admin/ManageProduct.jsx';
 import Categories from './Pages/Admin/Categories.jsx';
 import AdminDashboard from './Pages/Admin/AdminDashboard.jsx';
+import CategoryProducts from './Pages/Category/CategoryProducts.jsx';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -105,6 +106,8 @@ const router = createBrowserRouter(
       {/* Storefront Routes */}
       <Route path="/" element={<App />}>
         <Route index element={<Home />} />
+
+        <Route path="category/:slug" element={<CategoryProducts />} />
 
         {/* Guest Only Routes */}
         <Route element={<PublicRoute />}>

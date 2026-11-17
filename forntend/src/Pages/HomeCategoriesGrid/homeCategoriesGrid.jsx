@@ -69,7 +69,7 @@ const HomeCategoriesGrid = () => {
                                 variant="outline"
                                 className="mt-2 text-[10px] sm:text-xs w-full border-white text-white hover:bg-white hover:text-black transition-all py-1.5"
                             >
-                                Shop Now
+                                EXPAND
                             </Button>
                         </div>
                     </div>
