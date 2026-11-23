@@ -30,17 +30,21 @@ import productRouter from './routes/product.routes.js'
 import reviewRouter from './routes/review.routes.js'
 import adminRouter from './routes/admin.routes.js'
 import wishlist from './routes/wishlist.routes.js'
+import wishlistRouter from "./routes/wishlist.routes.js";
+// import orderRouter from "./routes/order.routes.js";
 
 //ROUTES SETUP
 app.use("/api/v1/users", userRouter)
 app.use("/api/v1/cart", cartRouter)
 app.use("/api/v1/categories", categoryRouter)
-app.use("/api/v1/order", orderRouter)
+app.use("/api/v1/orders", orderRouter)
 app.use("/api/v1/payment", paymentRouter)
 app.use("/api/v1/product", productRouter)
 app.use("/api/v1/review", reviewRouter)
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/wishlist", wishlist)
+app.use("/api/v1/wishlist", wishlistRouter);
+// app.use("/api/v1/orders", orderRouter);
 
 //http://localhost:5000/api/v1/users/register
 

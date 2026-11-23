@@ -16,14 +16,16 @@ import { verifyJWT } from '../middlewares/auth.middleware.js'
 const router = Router();
 router.use(verifyJWT);
 
-router.route("/").get( getUserWishlist)
+router.route("/").get(getUserWishlist)
 
-router.route("/:productId")
-    .post( addProductToWishlist)
-    .delete( removeProductFromWishlist)
 
 router.route("/clear")
-    .delete( clearWishlist)
+    .delete(clearWishlist)
+
+router.route("/:productId")
+    .post(addProductToWishlist)
+    .delete(removeProductFromWishlist)
+
 
 
 export default router

@@ -12,29 +12,47 @@ import {
 
 
 
-const getProductById = (asyncHandler(async (req, res) => {
+// const getProductById = (asyncHandler(async (req, res) => {
 
-    // Get product id from URL params
-    const { productId } = req.params
+//     // Get product id from URL params
+//     const { productId } = req.params
 
-    // Validate MongoDB ObjectId
-    validateObjectId(productId, "Product id")
+//     // Validate MongoDB ObjectId
+//     validateObjectId(productId, "Product id")
 
-    // Find product by id
-    const product = await Product.findById(productId)
+//     // Find product by id
+//     const product = await Product.findById(productId)
 
-    // Check product exists
-    validateResourceExists(product, 'Product')
+//     // Check product exists
+//     validateResourceExists(product, 'Product')
 
-    // Send response
-    return res
-        .status(200)
-        .json(
-            new apiResponse(
-                200, product, 'product fetched successfully'
-            )
-        )
-}))
+//     // Send response
+//     return res
+//         .status(200)
+//         .json(
+//             new apiResponse(
+//                 200, product, 'product fetched successfully'
+//             )
+//         )
+// }))
+
+
+const getProductBySlugOrId = asyncHandler(async (req, res) => {
+    const { identifier } = req.params; // slug ya _id dono aa sakte hain
+
+    const query = mongoose.Types.ObjectId.isValid(identifier)
+        ? { _id: identifier }
+        : { slug: identifier.toLowerCase() };
+
+    const product = await Product.findOne({ ...query, isDeleted: { $ne: true } })
+        .populate("category", "name slug");
+
+    validateResourceExists(product, "Product");
+
+    return res.status(200).json(
+        new apiResponse(200, product, "Product fetched successfully")
+    );
+});
 
 const getAllProducts1 = (asyncHandler(async (req, res) => {
 
@@ -391,7 +409,8 @@ const searchProduct = (asyncHandler(async (req, res) => {
 }))
 
 export {
-    getProductById,
+    getProductBySlugOrId,
+    // getProductById,
     // getAllProducts,
     getAllProducts1,
     filterProduct,

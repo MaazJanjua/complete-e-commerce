@@ -1,90 +1,79 @@
-import mongoose from "mongoose"
-import { asyncHandler } from '../utils/asyncHandler.js'
+import mongoose from "mongoose";
+import { asyncHandler } from '../utils/asyncHandler.js';
 import { apiError } from '../utils/apiError.js';
 import { apiResponse } from "../utils/apiResponse.js";
-
-
-import {
-    validateResourceExists,
-    validateObjectId
-} from '../utils/validators/galobalValidator.js'
+import { validateResourceExists, validateObjectId } from '../utils/validators/galobalValidator.js';
 import { Cart } from "../models/cart.model.js";
-
+import { Product } from "../models/product.model.js"; // <-- Missing import added
 
 // =====================================
-// Get User Cart
+// 1. Get User Cart
 // =====================================
-const getUserCart = (asyncHandler(async (req, res) => {
-
+const getUserCart = asyncHandler(async (req, res) => {
     const userId = req.user._id;
 
-    // Find cart
-    const cart = await Cart.findOne({
-        user: userId
-    }).populate({
-        path: "user",
-        select: "fullName username email"
-    })
+    let cart = await Cart.findOne({ user: userId })
         .populate({
             path: "items.product",
-            select: "title slug price stock images category"
+            select: "title slug price stock productImages category isActive"
         });
 
-    validateResourceExists(cart, 'Cart')
+    // Agar naya user hai aur cart abhi nahi bana, to empty cart return karein (404 error nahi)
+    if (!cart) {
+        return res.status(200).json(
+            new apiResponse(200, { items: [], totalPrice: 0 }, "Cart is empty")
+        );
+    }
+
+    // Deleted ya inactive products ko filter out karke fresh total calculate karein
+    cart.items = cart.items.filter(item => item.product && item.product.isActive !== false);
+    cart.totalPrice = cart.items.reduce((total, item) => {
+        return total + (item.product.price * item.quantity);
+    }, 0);
+
+    await cart.save();
 
     return res.status(200).json(
-        new apiResponse(
-            200, {}, "Cart fetched successfully"
-        )
+        new apiResponse(200, cart, "Cart fetched successfully")
     );
-}))
+});
 
 // =====================================
-// Add Product To Cart
+// 2. Add Product To Cart
 // =====================================
-const addToCart = (asyncHandler(async (req, res) => {
-
+const addToCart = asyncHandler(async (req, res) => {
     const userId = req.user._id;
+    const { productId } = req.params;
+    const quantity = Number(req.body.quantity) || 1;
 
-    const { productId } = req.params
+    validateObjectId(productId, "Product ID");
 
-    const { quantity = 1 } = req.body;
-
-    // Validate productId
-    validateObjectId(productId, "product id")
-
-    // Validate quantity  ||  It checks whether the quantity is an integer (whole number) or not. 
     if (!Number.isInteger(quantity) || quantity < 1) {
         throw new apiError(400, "Quantity must be at least 1");
     }
 
-    // Check product exists 
+    // Check product exists & active
     const product = await Product.findById(productId);
-
     validateResourceExists(product, "Product");
 
-    //get user existing cart
-    const existingCart = await Cart.findOne({ user: userId })
+    if (!product.isActive) {
+        throw new apiError(400, "This product is currently unavailable");
+    }
 
-    //find existing quantity || default = 0
-    let existingQuantity = 0
+    // Get existing cart
+    let cart = await Cart.findOne({ user: userId });
 
-    //if cart exists
-    if (existingCart) {
-
-        //check if product exists in cart or not
-        const existingItem = existingCart.items.find(
-
+    let existingQuantity = 0;
+    if (cart) {
+        const existingItem = cart.items.find(
             item => item.product.toString() === productId
-        )
+        );
         if (existingItem) {
-
-            //save existing quntity
-            existingQuantity = existingItem.quantity
+            existingQuantity = existingItem.quantity;
         }
     }
 
-    //  stock Check
+    // Stock validation
     if (existingQuantity + quantity > product.stock) {
         throw new apiError(
             400,
@@ -92,223 +81,161 @@ const addToCart = (asyncHandler(async (req, res) => {
         );
     }
 
-    // Find cart
-    // if Product already exists?
-    //increse quntity
-    const cart = await Cart.findOneAndUpdate(
-        {
-            user: userId,
-            // Cart ke items array mein product search karna
-            "items.product": productId
-        },
-        {// Increase quantity
-            $inc: {
-                "items.$.quantity": quantity
-            }
-        },
-        {
-            new: true
-        },
-        'quantity increased successfully'
-    )
-
-    //if not exists
     if (!cart) {
-        cart = await Cart.findOneAndUpdate(
-            {
-                user: userId
-            },
-            {
-                //push new items in items array
-                $push: {
-                    items: {
-                        product: productId,
-                        quantity: quantity,
-                        addedAt: new Date()
+        // Create new cart if doesn't exist
+        cart = await Cart.create({
+            user: userId,
+            items: [{ product: productId, quantity }],
+            totalPrice: product.price * quantity
+        });
+    } else {
+        const itemIndex = cart.items.findIndex(
+            item => item.product.toString() === productId
+        );
 
-                    }
-                },
-                //if crt exists then update and if cart doesnot exists then create new one
-                $setOnInsert: {
-                    totalPrice: 0
-                },
-            },
-            {
-                new: true,
-                upsert: true
-            }
-        )
+        if (itemIndex > -1) {
+            // Increase quantity if already in cart
+            cart.items[itemIndex].quantity += quantity;
+        } else {
+            // Push new product
+            cart.items.push({ product: productId, quantity });
+        }
+
+        await cart.populate({
+            path: "items.product",
+            select: "title slug price stock productImages"
+        });
+
+        cart.totalPrice = cart.items.reduce((total, item) => {
+            return total + (item.product.price * item.quantity);
+        }, 0);
+
+        await cart.save();
     }
-    // Populate  products || get product detailed
+
+    // Re-populate before returning response
     await cart.populate({
         path: "items.product",
-        select: "title slug price stock images",
+        select: "title slug price stock productImages"
     });
 
-    // Recalculate total price
-    // reduce() is an array method used to convert all array elements into a single value.cart.items.reduce()EXAMPLE([1,2,3]=>sum = 6)
-    cart.totalPrice = cart.items.reduce((total, item) => {
-        return total + item.product.price * item.quantity;
-    }, 0);
-
-    await cart.save();
-
-
-
     return res.status(200).json(
-        new apiResponse(
-            200,
-            cart,
-            "Product added to cart successfully"
-        )
+        new apiResponse(200, cart, "Product added to cart successfully")
     );
-}))
+});
 
 // =====================================
-// Update Item Quantity
+// 3. Update Item Quantity
 // =====================================
-const updateCartItemQuantity = (asyncHandler(async (req, res) => {
-    
+const updateCartItemQuantity = asyncHandler(async (req, res) => {
     const userId = req.user._id;
-
     const { productId } = req.params;
+    const quantity = Number(req.body.quantity);
 
-    const { quantity } = req.body;
+    validateObjectId(productId, "Product ID");
 
-    // Validate quantity
-    if (quantity <= 0) {
-        throw new apiError(400, 'quantity must be positive')
+    if (!Number.isInteger(quantity) || quantity < 1) {
+        throw new apiError(400, "Quantity must be at least 1");
     }
 
-    // Find cart
-    const cart = await Cart.findOne({ user: userId })
+    const product = await Product.findById(productId);
+    validateResourceExists(product, "Product");
 
-    validateResourceExists(cart, "Cart")
+    if (quantity > product.stock) {
+        throw new apiError(400, `Only ${product.stock} item(s) available in stock`);
+    }
 
-    // Find cart item
+    const cart = await Cart.findOne({ user: userId });
+    validateResourceExists(cart, "Cart");
+
     const existingItem = cart.items.find(
         item => item.product.toString() === productId
-    )
+    );
 
     if (!existingItem) {
-        throw new apiError(404, "Item not found in cart")
+        throw new apiError(404, "Item not found in cart");
     }
 
-    // Update quantity
     existingItem.quantity = quantity;
 
     await cart.populate({
         path: "items.product",
-        select: "price"
-    })
-
-
-    // Recalculate total
-    cart.totalPrice = cart.items.reduce((total, item) => {
-        return total + item.product.price * item.quantity
-    }, 0)
-
-    // Save cart
-    await cart.save();
-
-
-    return res.status(200).json(
-        new apiResponse(
-            200, cart, "Cart item updated successfully"
-        )
-    );
-}))
-
-
-// =====================================
-// Remove Item From Cart
-// =====================================
-const removeCartItem = (asyncHandler(async (req, res) => {
-
-    // Get logged-in user id
-    const userId = req.user._id;
-
-    // Get product id from URL
-    const { productId } = req.params;
-
-    // Validate product id
-    validateObjectId(productId, "Product id");
-
-    // Find user's cart
-    const cart = await Cart.findOne({
-        user: userId
+        select: "title slug price stock productImages"
     });
 
-    // Check cart exists
+    cart.totalPrice = cart.items.reduce((total, item) => {
+        return total + (item.product.price * item.quantity);
+    }, 0);
+
+    await cart.save();
+
+    return res.status(200).json(
+        new apiResponse(200, cart, "Cart item updated successfully")
+    );
+});
+
+// =====================================
+// 4. Remove Item From Cart
+// =====================================
+const removeCartItem = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const { productId } = req.params;
+
+    validateObjectId(productId, "Product ID");
+
+    const cart = await Cart.findOne({ user: userId });
     validateResourceExists(cart, "Cart");
 
-
-    // Find product index in cart
     const itemIndex = cart.items.findIndex(
-        item => item.product.toString() === productId,
-    )
+        item => item.product.toString() === productId
+    );
 
-    //check product Exists in cart
     if (itemIndex === -1) {
-        throw new apiError(404, 'product not found')
+        throw new apiError(404, "Product not found in cart");
     }
 
-    // Remove Product From Cart
-    cart.items.splice(itemIndex, 1)
+    cart.items.splice(itemIndex, 1);
 
-    // Recalculate total amount
-    cart.totalAmount = cart.items.reduce((total, item) => {
-        return total + (item.price * item.quantity)
-    }, 0)
+    await cart.populate({
+        path: "items.product",
+        select: "title slug price stock productImages"
+    });
 
-    // Save cart
-    await cart.save()
+    // Fixed: totalPrice & item.product.price
+    cart.totalPrice = cart.items.reduce((total, item) => {
+        return total + (item.product.price * item.quantity);
+    }, 0);
+
+    await cart.save();
 
     return res.status(200).json(
-        new apiResponse(
-            200, { cart }, "Item removed from cart successfully"
-        )
+        new apiResponse(200, cart, "Item removed from cart successfully")
     );
-}))
-
+});
 
 // =====================================
-// Clear Entire Cart
+// 5. Clear Entire Cart
 // =====================================
-const clearCart = (asyncHandler(async (req, res) => {
-
-    // Get logged-in user id
+const clearCart = asyncHandler(async (req, res) => {
     const userId = req.user._id;
 
-    // Find user's cart
     const cart = await Cart.findOneAndUpdate(
-        {
-            user: userId
-        },
+        { user: userId },
         {
             $set: {
-                item: [],
-                totalAmount: 0
+                items: [],     // Fixed typo: 'items' instead of 'item'
+                totalPrice: 0  // Fixed field name: 'totalPrice'
             }
         },
-        {
-            new: true,
-            runValidators: true
-        }
+        { new: true }
     );
 
-    validateResourceExists(cart, "Cart")
+    validateResourceExists(cart, "Cart");
 
-    // Send response
     return res.status(200).json(
-        new apiResponse(
-            200, cart, "Cart cleared successfully"
-        )
+        new apiResponse(200, cart, "Cart cleared successfully")
     );
-
-}));
-
-
+});
 
 export {
     getUserCart,
@@ -316,4 +243,4 @@ export {
     updateCartItemQuantity,
     removeCartItem,
     clearCart
-}
+};

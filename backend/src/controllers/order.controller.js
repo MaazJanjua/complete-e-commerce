@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { Order } from "../models/order.model.js";
 import { Cart } from "../models/cart.model.js";
 import { Product } from "../models/product.model.js";
+import { Counter } from '../models/counter.model.js'
 
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { apiError } from "../utils/apiError.js";
@@ -120,6 +121,10 @@ const createOrder = asyncHandler(async (req, res) => {
             );
         }
 
+        // Add Shipping Fee (Free above PKR 2,999, otherwise PKR 200)
+        const shippingFee = totalAmount >= 2999 ? 0 : 200;
+        totalAmount += shippingFee;
+
         // Generate Order Number
         const counter = await Counter.findByIdAndUpdate(
             "order",
@@ -196,15 +201,13 @@ const getUserOrders = asyncHandler(async (req, res) => {
     const userId = req.user._id;
 
     // Find all user orders
-    const orders = await Order.find({
-        user: userId
-    })
+    const orders = await Order.find({ user: userId }).sort({ createAt: -1 });
 
-    if (!orders.length) {
-        throw new apiError(
-            404, "No orders found"
-        );
-    }
+    // if (!orders.length) {
+    //     throw new apiError(
+    //         404, "No orders found"
+    //     );
+    // }
 
     return res.status(200).json(
         new apiResponse(

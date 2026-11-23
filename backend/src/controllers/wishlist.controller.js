@@ -12,10 +12,17 @@ const getUserWishlist = asyncHandler(async (req, res) => {
 
     const wishlist = await Wishlist.findOne({
         user: userId
-    }).populate("products")
+    }).populate({
+        path: "products",
+        select: "title slug price stock productImages category isActive"
+    })
 
-    validateResourceExists(wishlist, 'Wishlist')
-
+    //if user is new and wishlist in not created then return empty array
+    if (!wishlist) {
+        return res.status(200).json(
+            new apiResponse(200, { products: [] }, "Wishlist is empty")
+        );
+    }
     return res.status(200).json(
         new apiResponse(200, wishlist, 'wishlist fetched successfully')
     )
@@ -84,7 +91,7 @@ const removeProductFromWishlist = asyncHandler(async (req, res) => {
     const wishlist = await Wishlist.findOneAndUpdate(
         {
             user: userId,
-            product: productId
+            products: productId
         },
         // Remove Product
         {
@@ -94,12 +101,9 @@ const removeProductFromWishlist = asyncHandler(async (req, res) => {
         {
             new: true
         }
-    )
+    ).populate("products")
 
-    validateResourceExists(
-        wishlist,
-        "Product not found in wishlist"
-    );
+    validateResourceExists(wishlist, "Product not found in wishlist");
 
     // Return Response
     return res.status(200).json(

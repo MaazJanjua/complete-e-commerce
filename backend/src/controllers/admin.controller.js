@@ -849,20 +849,22 @@ const toggleProductStatus = (asyncHandler(async (req, res) => {
 const getAllOrders = asyncHandler(async (req, res) => {
 
     // TODO: fetch all orders
-    const { orderId } = req.params
+    const orders = await Order.find({ isDeleted: { $ne: true } })
+        .populate("user", "username fullName email")
+        .populate("items.product", "title productImages")
+        .sort({ createdAt: -1 });
 
-    await Order.findById(orderId)
-        .populate("user", "username email")
-        .populate("items.product", "title productImages");
-
-    validateResourceExists(order, "Order")
+    validateResourceExists(orders, "Order")
 
     return res.status(200).json(
         new apiResponse(
-            200, order, "all Orders fetched successfully"
+            200, orders, "all Orders fetched successfully"
         )
     )
 });
+
+
+
 const getOrderById = asyncHandler(async (req, res) => {
 
     // const userId = req.user._id
@@ -928,6 +930,7 @@ const updateOrderStatus = asyncHandler(async (req, res) => {
     order.orderStatus = orderStatus;
     if (order.orderStatus === "delivered") {
         order.deliveredAt = new Date();
+        order.paymentStatus = 'paid'; // COD payment collected on delivery
     }
     await order.save();
 
@@ -1237,11 +1240,26 @@ const createCategory = asyncHandler(async (req, res) => {
         throw new apiError(409, "Category with this name already exists");
     }
 
+
+    //upload images to claudinary if provided
+    let imageData = { url: "", public_id: "" };
+    if (req.file?.path) {
+        const uploadedImages = await uploadOnCloudinary(req.file.path)
+        if (!uploadedImages) {
+            throw new apiError(500, "Failed to upload category images")
+        }
+        imageData = {
+            url: uploadedImages.secure_url,
+            public_id: uploadedImages.public_id
+        }
+    }
+
     // 5. Create Category in Database
     const category = await Category.create({
         name: cleanName,
         slug,
         description: description?.trim() || "",
+        image: imageData,
         isActive: true // Active by default
     });
 
@@ -1270,8 +1288,8 @@ const updateCategory = asyncHandler(async (req, res) => {
     // 3. Get update fields from body
     const { name, description } = req.body;
 
-    if (!name?.trim() && description === undefined) {
-        throw new apiError(400, "At least one field (name or description) is required to update");
+    if (!name?.trim() && description === undefined && !req.file) {
+        throw new apiError(400, "At least one field (name, description or image) is required to update");
     }
 
     // 4. Find Category
@@ -1299,6 +1317,23 @@ const updateCategory = asyncHandler(async (req, res) => {
     if (description !== undefined) {
         category.description = description.trim();
     }
+    //REPLCE CATEGORY IMAGE ON CLLOUDINARY IF NEW FILE UPLOADED
+    if (req.file?.path) {
+        const uploadedImage = await uploadOnCloudinary(req.file.path)
+        if (!uploadedImage) {
+            throw new apiError(500, "Failed to upload new category image")
+        }
+        //Delete old images from cloudinary if exists
+        if (category.image?.public_id) {
+            await deleteFromCloudinary(category.image.public_id)
+        }
+
+        category.image = {
+            url: uploadedImage.secure_url,
+            public_id: uploadedImage.public_id
+        };
+    }
+
 
     // 6. Save Updated Category
     await category.save();
@@ -1320,7 +1355,7 @@ const updateCategory = asyncHandler(async (req, res) => {
 const deleteCategory = asyncHandler(async (req, res) => {
     // 1. Get categoryId from params
     const { categoryId } = req.params;
-
+  
     // 2. Validate ObjectId
     validateObjectId(categoryId, "Category ID");
 
@@ -1339,6 +1374,10 @@ const deleteCategory = asyncHandler(async (req, res) => {
             400,
             `Cannot delete category. It is assigned to ${associatedProductsCount} active product(s). Please reassign or delete those products first.`
         );
+    }
+
+    if (category.image?.public_id) {
+        await deleteFromCloudinary(category.image.public_id);
     }
 
     // 5. Delete Category from Database

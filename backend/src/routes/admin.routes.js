@@ -274,10 +274,10 @@ router.route("/products/:productId/images")
 // Category Management
 // ====================================
 router.route("/categories")
-    .post(createCategory);
+    .post(upload.single("image"), createCategory);
 
 router.route("/categories/:categoryId")
-    .patch(updateCategory)
+    .patch(upload.single("image"), updateCategory)
     .delete(deleteCategory);
 
 router.route("/categories/:categoryId/status")

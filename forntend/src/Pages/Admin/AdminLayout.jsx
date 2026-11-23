@@ -21,7 +21,8 @@ const AdminLayout = () => {
         { name: "Dashboard", path: "/admin/dashboard", icon: <FiGrid /> },
         { name: "Manage Products", path: "/admin/products", icon: <FiBox /> },
         { name: "Add Product", path: "/admin/products/create", icon: <FiFolderPlus /> },
-        { name: "Categories", path: "/admin/categories", icon: <FiShoppingBag /> }
+        { name: "Categories", path: "/admin/categories", icon: <FiShoppingBag /> },
+        { name: 'Orders', path: '/admin/orders', icon: FiShoppingBag }
     ]
 
     const isActive = (path) => location.pathname === path;

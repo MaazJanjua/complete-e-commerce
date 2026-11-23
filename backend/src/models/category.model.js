@@ -14,12 +14,10 @@ const categorySchema = new Schema({
         lowercase: true,
         trim: true
     },
-    images: [
-        {
-            url: String,
-            public_id: String
-        }
-    ],
+    image: {
+        url: { type: String, default: "" },
+        public_id: { type: String, default: "" }
+    },
     description: {
         type: String
     },

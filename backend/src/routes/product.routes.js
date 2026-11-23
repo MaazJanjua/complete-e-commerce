@@ -3,7 +3,8 @@ import { Router } from 'express'
 
 // Import all cart controllers
 import {
-    getProductById,
+    getProductBySlugOrId,
+    // getProductById,
     // getAllProducts,
     getAllProducts1,
     filterProduct,
@@ -42,7 +43,7 @@ router.route("/search").get(searchProduct)
 router.route("/category/:categoryId").get(filterProduct)
 
 router.route("/:productId")
-    .get(getProductById)
+    .get(getProductBySlugOrId)
     .patch(verifyJWT, isAdmin, updateProduct)
     .delete(verifyJWT, isAdmin, deleteProduct)
 router.route('/:productId/images')

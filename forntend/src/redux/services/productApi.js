@@ -90,7 +90,7 @@ export const productApi = createApi({
     }),
 
     // 2. UPDATED: Tag Types defined for Cache Invalidation
-    tagTypes: ['Product', 'Category'],
+    tagTypes: ['Product', 'Category', 'Cart', 'Wishlist', 'Order'],
 
     endpoints: (builder) => ({
         // Fetch all categories
@@ -116,8 +116,8 @@ export const productApi = createApi({
 
         // Fetch a single product detail by ID
         getProductById: builder.query({
-            query: (id) => `/product/${id}`,
-            providesTags: (result, error, id) => [{ type: 'Product', id }],
+            query: (slugOrId) => `/products/${slugOrId}`,
+            providesTags: (result, error, arg) => [{ type: 'Product', id: arg }],
         }),
 
         // 3. Create Product Mutation Endpoint
@@ -147,39 +147,188 @@ export const productApi = createApi({
             invalidatesTags: [{ type: 'Product', id: 'LIST' }],
         }),
 
-        createCategory: builder.mutation({
-            query: (categoryData) => ({
-                url: "/categories",
-                method: "POST",
-                body: categoryData,
-            }),
-            invalidatesTags: ['Category'],
-        }),
-
-        deleteCategory: builder.mutation({
-            query: (categoryId) => ({
-                url: `/categories/${categoryId}`,
-                method: "DELETE",
-            }),
-            invalidatesTags: ['Category'],
-        }),
 
 
         getAdminStats: builder.query({
             query: () => '/admin/stats',
             providesTags: ['Product', 'Category'],
         }),
+
+
+
+        // Cart, Wishlist & Order Endpoints (add inside productApi endpoints)
+        getCart: builder.query({
+            query: () => '/cart',
+            providesTags: ['Cart'],
+        }),
+        addToCart: builder.mutation({
+            query: ({ productId, quantity = 1 }) => ({
+                url: `/cart/add/${productId}`,
+                method: 'POST',
+                body: { quantity },
+            }),
+            invalidatesTags: ['Cart'],
+        }),
+        updateCartQuantity: builder.mutation({
+            query: ({ productId, quantity }) => ({
+                url: `/cart/${productId}`,
+                method: 'POST', // Matches your router.route('/:productId').post(updateCartItemQuantity)
+                body: { quantity },
+            }),
+            invalidatesTags: ['Cart'],
+        }),
+        removeCartItem: builder.mutation({
+            query: (productId) => ({
+                url: `/cart/${productId}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['Cart'],
+        }),
+
+        // Wishlist
+        getWishlist: builder.query({
+            query: () => '/wishlist',
+            providesTags: ['Wishlist'],
+        }),
+        addToWishlist: builder.mutation({
+            query: (productId) => ({
+                url: `/wishlist/${productId}`,
+                method: 'POST',
+            }),
+            invalidatesTags: ['Wishlist'],
+        }),
+        removeFromWishlist: builder.mutation({
+            query: (productId) => ({
+                url: `/wishlist/${productId}`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['Wishlist'],
+        }),
+
+        // Orders & COD Payment
+        createOrder: builder.mutation({
+            query: (shippingAddress) => ({
+                url: '/orders',
+                method: 'POST',
+                body: { shippingAddress },
+            }),
+            invalidatesTags: ['Cart', 'Order', 'Product'],
+        }),
+        createCodPayment: builder.mutation({
+            query: (orderId) => ({
+                url: '/payments', // Apne payment.routes.js ke exact path ke mutabiq check karein
+                method: 'POST',
+                body: { orderId, paymentMethod: 'COD' },
+            }),
+            invalidatesTags: ['Order'],
+        }),
+        getUserOrders: builder.query({
+            query: () => '/orders/user-orders',
+            providesTags: ['Order'],
+        }),
+        getOrderById: builder.query({
+            query: (orderId) => `/orders/${orderId}`,
+            providesTags: ['Order'],
+        }),
+        cancelOrder: builder.mutation({
+            query: (orderId) => ({
+                url: `/orders/${orderId}/cancel`,
+                method: 'DELETE',
+            }),
+            invalidatesTags: ['Order', 'Product'],
+        }),
+
+
+        // Admin Order Management Endpoints
+        getAllAdminOrders: builder.query({
+            query: () => '/orders/admin/all-orders',
+            providesTags: ['Order'],
+        }),
+        updateAdminOrderStatus: builder.mutation({
+            query: ({ orderId, orderStatus }) => ({
+                url: `/orders/admin/${orderId}/status`,
+                method: 'POST',
+                body: { orderStatus },
+            }),
+            invalidatesTags: ['Order', 'Product'],
+        }),
+        addAdminOrderTracking: builder.mutation({
+            query: ({ orderId, trackingNumber }) => ({
+                url: `/orders/admin/${orderId}/tracking`,
+                method: 'POST',
+                body: { trackingNumber },
+            }),
+            invalidatesTags: ['Order'],
+        }),
+
+
+
+        // Category Mutations (Supports FormData with Image)
+        createCategory: builder.mutation({
+            query: (formData) => ({
+                url: '/admin/categories',
+                method: 'POST',
+                body: formData,
+            }),
+            invalidatesTags: ['Category'],
+        }),
+        updateCategory: builder.mutation({
+            query: ({ categoryId, formData }) => ({
+                url: `/admin/categories/${categoryId}`,
+                method: 'PATCH',
+                body: formData,
+            }),
+            invalidatesTags: ['Category'],
+        }),
+
+        deleteCategory: builder.mutation({
+            query: (categoryId) => ({
+                url: `/admin/categories/${categoryId}`, // <-- '/admin' add karein
+                method: "DELETE",
+            }),
+            invalidatesTags: ['Category'],
+        }),
+
     }),
 });
 
+
+
 export const {
-    useGetCategoriesQuery,
+    // Existing Product & Category & Admin Hooks
     useGetProductsQuery,
     useGetProductByIdQuery,
     useCreateProductMutation,
-    useDeleteProductMutation,
     useUpdateProductMutation,
+    useDeleteProductMutation,
+    useGetAdminStatsQuery,
+
+    // Cart Hooks
+    useGetCartQuery,
+    useAddToCartMutation,
+    useUpdateCartQuantityMutation,
+    useRemoveCartItemMutation,
+
+    // Wishlist Hooks
+    useGetWishlistQuery,
+    useAddToWishlistMutation,
+    useRemoveFromWishlistMutation,
+
+    // Order & COD Payment Hooks
+    useCreateOrderMutation,
+    useCreateCodPaymentMutation,
+    useGetUserOrdersQuery,
+    useGetOrderByIdQuery,
+    useCancelOrderMutation,
+
+    useGetAllAdminOrdersQuery,
+    useUpdateAdminOrderStatusMutation,
+    useAddAdminOrderTrackingMutation,
+
+    //CATEGORY HOOKS
+    // usecreateCategorymutation,
+    useGetCategoriesQuery,
     useCreateCategoryMutation,
     useDeleteCategoryMutation,
-    useGetAdminStatsQuery
+    useUpdateCategoryMutation
 } = productApi;

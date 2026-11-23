@@ -40,9 +40,9 @@ const getCategoryById = asyncHandler(async (req, res) => {
 // =====================================
 const getAllCategories = asyncHandler(async (req, res) => {
 
-    // Fetch all categories
+    // Fetch all categories including image, description & isActive
     const categories = await Category.find()
-        .select("name slug createdAt")
+        .select("name slug description image isActive createdAt")
         .sort({ createdAt: -1 })
         .lean();
 

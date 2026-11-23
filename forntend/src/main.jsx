@@ -99,6 +99,13 @@ import ManageProducts from './Pages/Admin/ManageProduct.jsx';
 import Categories from './Pages/Admin/Categories.jsx';
 import AdminDashboard from './Pages/Admin/AdminDashboard.jsx';
 import CategoryProducts from './Pages/Category/CategoryProducts.jsx';
+import ProductDetails from './Pages/Product/ProductDetails.jsx';
+import CartPage from './Pages/Cart/CartPage.jsx';
+import CheckoutPage from './Pages/Checkout/CheckoutPage.jsx';
+import WishlistPage from './Pages/Wishlist/WishlistPage.jsx';
+import MyOrdersPage from './Pages/Orders/MyOrdersPage.jsx';
+import OrderTrackingPage from './Pages/Orders/OrderTrackingPage.jsx';
+import ManageOrders from './Pages/Admin/ManageOrders.jsx';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -107,7 +114,10 @@ const router = createBrowserRouter(
       <Route path="/" element={<App />}>
         <Route index element={<Home />} />
 
+        {/* Public Storefront Browsing Routes (Accessible to Everyone) */}
         <Route path="category/:slug" element={<CategoryProducts />} />
+        <Route path="product/:slug" element={<ProductDetails />} />
+
 
         {/* Guest Only Routes */}
         <Route element={<PublicRoute />}>
@@ -118,6 +128,11 @@ const router = createBrowserRouter(
         {/* User Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="account" element={<Profile />} />
+          <Route path="cart" element={<CartPage />} />
+          <Route path="checkout" element={<CheckoutPage />} />
+          <Route path="wishlist" element={<WishlistPage />} />
+          <Route path="orders" element={<MyOrdersPage />} />
+          <Route path="orders/:orderId" element={<OrderTrackingPage />} />
         </Route>
       </Route>
 
@@ -129,6 +144,7 @@ const router = createBrowserRouter(
           <Route path="products" element={<ManageProducts />} />
           <Route path="products/create" element={<CreateProduct />} />
           <Route path="categories" element={<Categories />} />
+          <Route path='orders' element={<ManageOrders /> }/>
         </Route>
       </Route>
     </>
