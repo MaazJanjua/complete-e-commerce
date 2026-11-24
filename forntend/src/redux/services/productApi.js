@@ -1,14 +1,16 @@
 // frontend/src/redux/services/productApi.js
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
+
 export const productApi = createApi({
     reducerPath: "productApi",
     baseQuery: fetchBaseQuery({
-        baseUrl: 'http://localhost:5000/api/v1', //Express Server Port
+        baseUrl: BASE_URL, //Express Server Port
         credentials: "include", // For cross-origin cookie session support 
 
         // 1. UPDATE: Authorization Header Injection for Admin/User Requests
-        prepareHeaders: (headers) => {
+        prepareHeaders: (headers) => { 
             const token = localStorage.getItem("token");
             if (token) {
                 // Fixed: Lowercase headers.set

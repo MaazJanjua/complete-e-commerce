@@ -1,10 +1,12 @@
 // forntend/src/redux/services/authApi.js
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api/v1";
+
 export const authApi = createApi({
     reducerPath: 'authApi',
     baseQuery: fetchBaseQuery({
-        baseUrl: 'http://localhost:5000/api/v1', // Verify port 5000 is matching your Express server
+        baseUrl: BASE_URL, // Verify port 5000 is matching your Express server
         credentials: 'include', // Handles HTTP-Only cookies for JWT
     }),
     tagTypes: ['User'],
