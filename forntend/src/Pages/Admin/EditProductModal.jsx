@@ -162,4 +162,4 @@ const EditProductModal = ({ product, onClose }) => {
   );
 };
 
-export default EditProductModal;
+export default EditProductModal; 

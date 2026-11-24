@@ -31,7 +31,10 @@ const ProductDetails = () => {
 
     // Cart & Wishlist Mutations
     const [addToCart, { isLoading: isAddingToCart }] = useAddToCartMutation();
-    const { data: wishlistData } = useGetWishlistQuery();
+
+    const token = localStorage.getItem("token");
+    const { data: wishlistData } = useGetWishlistQuery(undefined, { skip: !token });
+
     const [addToWishlist] = useAddToWishlistMutation();
     const [removeFromWishlist] = useRemoveFromWishlistMutation();
 
@@ -157,11 +160,10 @@ const ProductDetails = () => {
                                     key={idx}
                                     type="button"
                                     onClick={() => setSelectedImage(idx)}
-                                    className={`w-16 h-20 sm:w-20 sm:h-24 rounded-lg overflow-hidden border-2 shrink-0 transition-all ${
-                                        selectedImage === idx
-                                            ? 'border-black scale-105'
-                                            : 'border-transparent opacity-70 hover:opacity-100'
-                                    }`}
+                                    className={`w-16 h-20 sm:w-20 sm:h-24 rounded-lg overflow-hidden border-2 shrink-0 transition-all ${selectedImage === idx
+                                        ? 'border-black scale-105'
+                                        : 'border-transparent opacity-70 hover:opacity-100'
+                                        }`}
                                 >
                                     <img
                                         src={imgUrl}
@@ -267,11 +269,10 @@ const ProductDetails = () => {
                         {/* Feedback Banner */}
                         {feedback.text && (
                             <div
-                                className={`p-3 rounded-lg text-xs font-bold ${
-                                    feedback.type === 'success'
-                                        ? 'bg-green-50 text-green-700 border border-green-200'
-                                        : 'bg-red-50 text-red-700 border border-red-200'
-                                }`}
+                                className={`p-3 rounded-lg text-xs font-bold ${feedback.type === 'success'
+                                    ? 'bg-green-50 text-green-700 border border-green-200'
+                                    : 'bg-red-50 text-red-700 border border-red-200'
+                                    }`}
                             >
                                 {feedback.text}
                             </div>
@@ -296,11 +297,10 @@ const ProductDetails = () => {
                             <button
                                 type="button"
                                 onClick={handleWishlistToggle}
-                                className={`px-5 py-4 rounded-xl border font-extrabold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                                    isWishlisted
-                                        ? 'border-red-500 bg-red-50 text-red-600'
-                                        : 'border-gray-300 text-gray-900 hover:border-black'
-                                }`}
+                                className={`px-5 py-4 rounded-xl border font-extrabold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${isWishlisted
+                                    ? 'border-red-500 bg-red-50 text-red-600'
+                                    : 'border-gray-300 text-gray-900 hover:border-black'
+                                    }`}
                             >
                                 <FiHeart className={isWishlisted ? 'fill-red-600 text-red-600' : ''} />
                                 {isWishlisted ? 'Wishlisted' : 'Wishlist'}

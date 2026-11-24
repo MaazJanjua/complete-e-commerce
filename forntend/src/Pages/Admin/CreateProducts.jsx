@@ -347,4 +347,4 @@ const CreateProduct = () => {
   );
 };
 
-export default CreateProduct;
+export default CreateProduct; 

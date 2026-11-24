@@ -6,39 +6,19 @@ import { Product } from "../models/product.model.js";
 
 //VALIDATE IMPORTS
 import {
-    validateObjectId,
     validateResourceExists
 } from '../utils/validators/galobalValidator.js'
 
 
 
-// const getProductById = (asyncHandler(async (req, res) => {
-
-//     // Get product id from URL params
-//     const { productId } = req.params
-
-//     // Validate MongoDB ObjectId
-//     validateObjectId(productId, "Product id")
-
-//     // Find product by id
-//     const product = await Product.findById(productId)
-
-//     // Check product exists
-//     validateResourceExists(product, 'Product')
-
-//     // Send response
-//     return res
-//         .status(200)
-//         .json(
-//             new apiResponse(
-//                 200, product, 'product fetched successfully'
-//             )
-//         )
-// }))
 
 
 const getProductBySlugOrId = asyncHandler(async (req, res) => {
-    const { identifier } = req.params; // slug ya _id dono aa sakte hain
+    const identifier = req.params.productId || req.params.identifier;
+
+    if (!identifier) {
+        throw new apiError(400, "Product identifier is required");
+    }
 
     const query = mongoose.Types.ObjectId.isValid(identifier)
         ? { _id: identifier }
@@ -410,8 +390,6 @@ const searchProduct = (asyncHandler(async (req, res) => {
 
 export {
     getProductBySlugOrId,
-    // getProductById,
-    // getAllProducts,
     getAllProducts1,
     filterProduct,
     searchProduct,

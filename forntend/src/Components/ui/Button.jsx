@@ -32,7 +32,7 @@ const Button = ({
         >
             {isLoading ? "Processing..." : children}
 
-        </button>
+        </button> 
     )
 }
 

@@ -3,11 +3,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import SearchByCategory from '../../Components/Fab-flower-search-by-categpry/searchByCategory';
 
-// Import your local video assets here if needed:
-// import video1 from '../../assets/videos/hero-1.mp4';
-// import video2 from '../../assets/videos/hero-2.mp4';
-// import video3 from '../../assets/videos/hero-3.mp4';
-
 const Hero = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
     const videoRefs = useRef([]);

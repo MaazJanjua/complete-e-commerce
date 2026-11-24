@@ -14,9 +14,7 @@ const Footer = () => {
 
           {/* Company Info */}
           <div className="space-y-4 font-(--font-primary)">
-            {/* <h2 className="text-4xl font-bold tracking-tight ">
-              HM<span className="">Store</span>
-            </h2> */}
+           
             <h2>
               {/* Logo */}
               <Link

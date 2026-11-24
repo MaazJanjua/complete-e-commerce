@@ -19,32 +19,17 @@ const Login = ({ switchToRegister }) => {
     const [apiSuccess, setApiSuccess] = useState('')
 
     const { register, handleSubmit, formState: { errors } } = useForm()
-    // const onSubmit = async (data) => {
-    //         console.log("LOGIN SUBMITTED:", data);
-
-    //     setApiError('');
-    //     try {
-    //         await loginUser(data).unwrap();
-    //     } catch (error) {
-    //         setApiError(error?.data?.message || "Invalid credentilas")
-    //     }
-    // }
-
+   
     const onSubmit = async (data) => {
-        // console.log("1️⃣ LOGIN SUBMITTED:", data);
-
         setApiError("");
         setApiSuccess("")
 
         try {
-            // console.log("2️⃣ CALLING LOGIN API...");
 
             const response = await loginUser(data).unwrap();
 
-            // console.log("3️⃣ LOGIN SUCCESS:", response);
+            
             // Show success popup
-            // alert("Login successful! 🎉");
-           // Show success message
             setApiSuccess("Login Successful! 🎉"); 
             // Navigate to Home after 1.5 seconds 
            setTimeout(() => { navigate("/"); }, 1500);

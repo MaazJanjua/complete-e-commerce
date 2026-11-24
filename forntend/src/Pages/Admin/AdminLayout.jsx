@@ -72,7 +72,7 @@ const AdminLayout = () => {
                                 {link.name}
                             </Link>
                         ))}
-                    </nav>
+                    </nav> 
                 </div>
 
                 {/* Bottom Actions */}

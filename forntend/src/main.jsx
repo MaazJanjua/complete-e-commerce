@@ -106,6 +106,7 @@ import WishlistPage from './Pages/Wishlist/WishlistPage.jsx';
 import MyOrdersPage from './Pages/Orders/MyOrdersPage.jsx';
 import OrderTrackingPage from './Pages/Orders/OrderTrackingPage.jsx';
 import ManageOrders from './Pages/Admin/ManageOrders.jsx';
+// import ProductDeatilPage from './Pages/ProductPage/ProductDetailPage.jsx';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -116,8 +117,7 @@ const router = createBrowserRouter(
 
         {/* Public Storefront Browsing Routes (Accessible to Everyone) */}
         <Route path="category/:slug" element={<CategoryProducts />} />
-        <Route path="product/:slug" element={<ProductDetails />} />
-
+        <Route path="/product/:slug" element={<ProductDetails />} />
 
         {/* Guest Only Routes */}
         <Route element={<PublicRoute />}>
@@ -144,7 +144,7 @@ const router = createBrowserRouter(
           <Route path="products" element={<ManageProducts />} />
           <Route path="products/create" element={<CreateProduct />} />
           <Route path="categories" element={<Categories />} />
-          <Route path='orders' element={<ManageOrders /> }/>
+          <Route path='orders' element={<ManageOrders />} />
         </Route>
       </Route>
     </>

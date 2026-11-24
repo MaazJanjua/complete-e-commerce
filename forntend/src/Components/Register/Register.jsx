@@ -27,7 +27,7 @@ const Register = ({ switchToLogin }) => {
         } catch (error) {
             setApiError(error?.data?.message || "Registration failed!")
         }
-    }
+    } 
 
 
     return (
@@ -54,28 +54,6 @@ const Register = ({ switchToLogin }) => {
                         error={errors.fullName?.message}
                     />
 
-
-
-                    {/* <input
-                        label="Full Name"
-                        placeholder='John Doe'
-                        type='text'
-                        {...register("fullName", {
-                            required: "Full name is required"
-                        })}
-                        error={errors.fullName?.message}
-                    /> */}
-
-                    {/* <Input
-                        label="Username"
-                        type="text"
-                        placeholder="johndoe"
-                        {...register("Username", {
-                            required: "Username is required"
-                        })}
-                        error={errors.username?.message}
-                    /> */}
-
                     <Input
                         label="Username"
                         type="text"
@@ -100,17 +78,6 @@ const Register = ({ switchToLogin }) => {
                         })}
                         error={errors.email?.message}
                     />
-
-                    {/* <Input
-                        label="Password"
-                        type="password"
-                        placeholder="********"
-                        {...register("password", {
-                            required: "Password is required",
-                            minLength: { value: 6, message: "Password must be at least c characters" },
-                        })}
-                        error={errors.password?.message}
-                    /> */}
 
                     <Input
                         label="Password"

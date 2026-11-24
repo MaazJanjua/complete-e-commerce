@@ -6,7 +6,7 @@ import {
     FiCheckCircle,
     FiPackage,
     FiTruck,
-    FiHome,
+    FiHome, 
     FiClock,
     FiXCircle,
     FiMapPin
@@ -174,45 +174,7 @@ const OrderTrackingPage = () => {
                     </div>
                 </div>
 
-                {/* Shipping & Payment Summary */}
-                {/* <div className="space-y-6">
-                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-3">
-                        <h2 className="text-xs font-black uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-3 flex items-center gap-1.5">
-                            <FiMapPin /> Delivery Address
-                        </h2>
-                        <div className="text-xs text-gray-600 space-y-1">
-                            <p className="font-bold text-gray-900">{order.shippingAddress?.name}</p>
-                            <p>{order.shippingAddress?.phoneNumber}</p>
-                            <p>{order.shippingAddress?.address}</p>
-                            <p className="font-semibold text-gray-800">{order.shippingAddress?.city}</p>
-                        </div>
-                    </div>
 
-                    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-3">
-                        <h2 className="text-xs font-black uppercase tracking-wider text-gray-900 border-b border-gray-100 pb-3">
-                            Payment Summary
-                        </h2>
-                        <div className="flex justify-between text-xs text-gray-600">
-                            <span>Payment Method</span>
-                            <span className="font-bold text-gray-900">Cash on Delivery (COD)</span>
-                        </div>
-                        <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                            <span className="text-xs font-black uppercase text-gray-900">Total Payable</span>
-                            <span className="text-lg font-black text-gray-900">PKR {order.totalAmount?.toLocaleString()}</span>
-                        </div>
-
-                        {canCancel && (
-                            <button
-                                type="button"
-                                disabled={isCancelling}
-                                onClick={handleCancelOrder}
-                                className="w-full mt-3 border border-red-300 text-red-600 hover:bg-red-50 font-extrabold text-[11px] uppercase py-2.5 rounded-lg transition-colors cursor-pointer"
-                            >
-                                {isCancelling ? 'Cancelling...' : 'Cancel Order'}
-                            </button>
-                        )}
-                    </div>
-                </div> */}
                 {/* Payment Summary */}
                 {(() => {
                     const itemsSubtotal = order.items?.reduce(

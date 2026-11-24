@@ -6,7 +6,6 @@ import {
 } from '../../redux/services/productApi';
 import { FiPackage, FiTruck, FiSearch, FiEye, FiX, FiCheck } from 'react-icons/fi';
 
-// const STATUS_OPTIONS = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
 
 const STATUS_OPTIONS = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
 
@@ -166,21 +165,6 @@ const ManageOrders = () => {
                                             PKR {order.totalAmount?.toLocaleString()}
                                         </td>
 
-                                        {/* <td className="py-3.5 px-4">
-                                            <select
-                                                disabled={isUpdatingStatus}
-                                                value={order.orderStatus}
-                                                onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                                                className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold uppercase border cursor-pointer focus:outline-none ${statusColors[order.orderStatus] || statusColors.pending
-                                                    }`}
-                                            >
-                                                {STATUS_OPTIONS.map((st) => (
-                                                    <option key={st} value={st} className="bg-white text-gray-900">
-                                                        {st}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </td> */}
                                         <td className="py-3.5 px-4">
                                             <select
                                                 disabled={isUpdatingStatus || !NEXT_STATUS[order.orderStatus]}
@@ -207,7 +191,7 @@ const ManageOrders = () => {
                                                 </span>
                                             ) : (
                                                 <span className="text-[11px] text-gray-400 italic">Not assigned</span>
-                                            )}
+                                            )} 
                                         </td>
 
                                         <td className="py-3.5 px-4 text-right">

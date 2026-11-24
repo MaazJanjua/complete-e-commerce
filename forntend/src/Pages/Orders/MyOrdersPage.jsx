@@ -10,7 +10,7 @@ const statusStyles = {
     shipped: 'bg-purple-50 text-purple-700 border-purple-200',
     delivered: 'bg-green-50 text-green-700 border-green-200',
     cancelled: 'bg-red-50 text-red-700 border-red-200',
-};
+}; 
 
 const MyOrdersPage = () => {
     const { data, isLoading, isError, error } = useGetUserOrdersQuery();
