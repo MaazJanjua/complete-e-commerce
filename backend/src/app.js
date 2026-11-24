@@ -6,14 +6,39 @@ import { config } from './config/config.js'
 
 const app = express();
 
+// app.use(
+//     cors({
+//         origin: config.CORS_ORIGIN || 'http://localhost:5173',// Your Vite React Frontend URL
+//         credentials: true,// Allows HTTP-Only cookies to pass between Frontend and Backend
+//         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+//         allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+//     })) 
+
+const allowedOrigins = [
+    "http://localhost:5173",
+    "https://complete-e-commerce-iota.vercel.app",
+    config.CORS_ORIGIN,
+    process.env.CORS_ORIGIN,
+]
+    .filter(Boolean)
+    .map((url) => url.replace(/\/$/, "")); // Trailing slash remove karega
+
 app.use(
     cors({
-        origin: config.CORS_ORIGIN || 'http://localhost:5173',// Your Vite React Frontend URL
-        credentials: true,// Allows HTTP-Only cookies to pass between Frontend and Backend
+        origin: function (origin, callback) {
+            if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ""))) {
+                callback(null, true);
+            } else {
+                callback(new Error(`CORS blocked for origin: ${origin}`));
+            }
+        },
+        credentials: true,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-    })) 
-  
+    })
+);
+
+
 
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
