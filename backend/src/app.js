@@ -6,14 +6,6 @@ import { config } from './config/config.js'
 
 const app = express();
 
-// app.use(
-//     cors({
-//         origin: config.CORS_ORIGIN || 'http://localhost:5173',// Your Vite React Frontend URL
-//         credentials: true,// Allows HTTP-Only cookies to pass between Frontend and Backend
-//         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-//         allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-//     })) 
-
 const allowedOrigins = [
     "http://localhost:5173",
     "https://complete-e-commerce-iota.vercel.app",

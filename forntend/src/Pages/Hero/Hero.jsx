@@ -1,7 +1,7 @@
 // src/Pages/Hero/Hero.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
-import SearchByCategory from '../../Components/Fab-flower-search-by-categpry/searchByCategory';
+// import SearchByCategory from '../../Components/Fab-flower-search-by-categpry/searchByCategory';
 
 const Hero = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -165,7 +165,7 @@ const Hero = () => {
             </div>
 
             {/* Floating Category Menu */}
-            <SearchByCategory />
+            {/* <SearchByCategory /> */}
         </section>
     );
 };
